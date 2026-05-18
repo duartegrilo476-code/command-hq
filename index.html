@@ -1,0 +1,1831 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#06060d">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Command HQ — Lead Agent + Nova Studio</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=JetBrains+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#06060d;--bg1:#0b0b16;--bg2:#10101e;--bg3:#171728;--bg4:#1f1f34;
+  --border:rgba(255,255,255,.06);--border2:rgba(255,255,255,.1);--border3:rgba(255,255,255,.18);
+  --text:#e8e8f8;--text2:#7878a0;--text3:#404060;
+  --acc:#6c63ff;--acc2:#4a44c0;--acc-s:rgba(108,99,255,.15);
+  --gold:#ffc947;--gold2:#ff9d00;--gold-s:rgba(255,201,71,.12);
+  --green:#00e0a0;--green-s:rgba(0,224,160,.1);
+  --pink:#ff5fa0;--pink-s:rgba(255,95,160,.1);
+  --amber:#ffb347;--amber-s:rgba(255,179,71,.1);
+  --red:#ff4f6d;--red-s:rgba(255,79,109,.1);
+  --teal:#00cfc8;--teal-s:rgba(0,207,200,.1);
+}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-size:13.5px;overflow:hidden;}
+.shell{display:flex;height:100vh;}
+
+/* SIDEBAR */
+.sb{width:220px;flex-shrink:0;background:var(--bg1);border-right:1px solid var(--border);display:flex;flex-direction:column;}
+.sb-top{padding:18px 16px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;}
+.sb-gem{width:32px;height:32px;border-radius:9px;background:linear-gradient(135deg,var(--acc),var(--pink));display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.sb-gem svg{width:16px;height:16px;}
+.sb-nm{font-family:'Syne',sans-serif;font-size:14px;font-weight:800;letter-spacing:.01em;}
+.sb-tag{font-size:9px;color:var(--text3);letter-spacing:.14em;text-transform:uppercase;margin-top:1px;}
+.sb-body{flex:1;overflow-y:auto;padding:10px 8px;}
+.sb-sec{font-size:9px;color:var(--text3);letter-spacing:.15em;text-transform:uppercase;padding:9px 8px 5px;font-weight:600;}
+.ni{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:9px;cursor:pointer;color:var(--text2);font-size:12.5px;font-weight:500;transition:all .14s;margin:1px 0;}
+.ni:hover{background:var(--bg2);color:var(--text);}
+.ni.on{background:var(--acc-s);color:var(--text);border:1px solid rgba(108,99,255,.25);}
+.ni svg{width:14px;height:14px;flex-shrink:0;opacity:.65;}.ni.on svg{opacity:1;}
+.nbadge{margin-left:auto;font-size:9px;font-weight:600;padding:2px 7px;border-radius:10px;font-family:'JetBrains Mono',monospace;}
+.nbadge.g{background:var(--green-s);color:var(--green);}
+.nbadge.a{background:var(--amber-s);color:var(--amber);}
+.nbadge.gold{background:var(--gold-s);color:var(--gold);}
+.nbadge.new{background:var(--pink-s);color:var(--pink);}
+.sb-foot{border-top:1px solid var(--border);padding:12px 14px;}
+
+/* MAIN */
+.main{flex:1;display:flex;flex-direction:column;min-width:0;}
+.topbar{height:52px;background:var(--bg1);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;gap:10px;flex-shrink:0;}
+.tb-title{font-family:'Syne',sans-serif;font-size:14px;font-weight:800;}
+.tb-div{width:1px;height:16px;background:var(--border2);}
+.tb-sub{font-size:11px;color:var(--text3);}
+.tb-sp{flex:1;}
+.tb-pill{display:flex;align-items:center;gap:5px;padding:5px 12px;border-radius:20px;border:1px solid var(--border2);background:var(--bg2);font-size:11px;color:var(--text2);font-family:'JetBrains Mono',monospace;}
+.ldot{width:5px;height:5px;border-radius:50%;background:var(--green);animation:lp 2s infinite;}
+@keyframes lp{0%,100%{opacity:1;}50%{opacity:.3;}}
+.content{flex:1;overflow:hidden;display:flex;}
+.view{display:none;flex:1;overflow:hidden;}
+.view.on{display:flex;}
+::-webkit-scrollbar{width:3px;}::-webkit-scrollbar-track{background:transparent;}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px;}
+
+/* OVERVIEW */
+.ov-sc{flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:14px;}
+.kpi-row{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;}
+.kpi{background:var(--bg1);border:1px solid var(--border);border-radius:14px;padding:15px;position:relative;overflow:hidden;}
+.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+.kpi.k1::before{background:var(--gold);}.kpi.k2::before{background:var(--green);}.kpi.k3::before{background:var(--acc);}.kpi.k4::before{background:var(--pink);}.kpi.k5::before{background:var(--teal);}
+.kpi-l{font-size:9.5px;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:7px;}
+.kpi-v{font-family:'JetBrains Mono',monospace;font-size:22px;font-weight:500;}
+.kpi-c{font-family:'JetBrains Mono',monospace;font-size:10.5px;margin-top:5px;}
+.kpi-c.up{color:var(--green);}.kpi-c.nt{color:var(--text3);}
+.qa-row{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;}
+.qa{background:var(--bg1);border:1px solid var(--border);border-radius:12px;padding:12px 6px;display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;transition:all .15s;}
+.qa:hover{background:var(--bg2);border-color:var(--border2);transform:translateY(-2px);}
+.qa-ico{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;}
+.qa-ico svg{width:16px;height:16px;}
+.qa-lbl{font-size:10.5px;font-weight:500;text-align:center;}
+.ov-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.panel{background:var(--bg1);border:1px solid var(--border);border-radius:14px;padding:16px;}
+.ph{font-size:9.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);margin-bottom:12px;display:flex;align-items:center;gap:6px;}
+.ph svg{width:12px;height:12px;}
+
+/* LEAD AGENT */
+.lead-shell{display:flex;flex:1;overflow:hidden;}
+.lead-list-panel{width:280px;flex-shrink:0;background:var(--bg1);border-right:1px solid var(--border);display:flex;flex-direction:column;}
+.lead-tabs{display:flex;border-bottom:1px solid var(--border);}
+.lead-tab{flex:1;padding:11px;text-align:center;font-size:12px;font-weight:500;color:var(--text3);cursor:pointer;border-bottom:2px solid transparent;transition:all .14s;}
+.lead-tab.on{color:var(--green);border-bottom-color:var(--green);}
+.lead-srch{padding:9px 11px;border-bottom:1px solid var(--border);}
+.lead-srch input{width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:7px 12px;font-family:'DM Sans',sans-serif;font-size:12.5px;color:var(--text);outline:none;}
+.lead-srch input::placeholder{color:var(--text3);}
+.lead-list{flex:1;overflow-y:auto;}
+.lead-item{display:flex;align-items:center;gap:9px;padding:11px 13px;cursor:pointer;border-bottom:1px solid var(--border);transition:background .12s;}
+.lead-item:hover{background:var(--bg2);}
+.lead-item.on{background:var(--bg2);}
+.lead-av{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;color:#fff;}
+.lead-info{flex:1;min-width:0;}
+.lead-nm{font-size:12.5px;font-weight:500;}
+.lead-sub{font-size:10.5px;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.lead-meta{display:flex;flex-direction:column;align-items:flex-end;gap:3px;flex-shrink:0;}
+.lead-time{font-size:9.5px;color:var(--text3);}
+.lead-score{font-size:9px;font-weight:700;padding:2px 7px;border-radius:8px;}
+.lead-score.hot{background:rgba(255,79,109,.15);color:var(--red);}
+.lead-score.warm{background:var(--amber-s);color:var(--amber);}
+.lead-score.cold{background:var(--bg3);color:var(--text3);}
+
+.lead-main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.lead-hd{padding:13px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;flex-shrink:0;}
+.lead-hd-nm{font-family:'Syne',sans-serif;font-size:14px;font-weight:800;}
+.lead-hd-sub{font-size:10.5px;color:var(--text3);}
+.lead-hd-r{margin-left:auto;display:flex;gap:6px;}
+.lead-badge{padding:4px 11px;border-radius:7px;font-size:11px;font-weight:600;}
+.lead-badge.hot{background:rgba(255,79,109,.15);color:var(--red);border:1px solid rgba(255,79,109,.25);}
+.lead-badge.warm{background:var(--amber-s);color:var(--amber);border:1px solid rgba(255,179,71,.25);}
+.lead-badge.qualified{background:var(--green-s);color:var(--green);border:1px solid rgba(0,224,160,.25);}
+.hd-btn{padding:5px 11px;border-radius:7px;border:1px solid var(--border2);background:transparent;color:var(--text2);font-size:11px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .14s;display:flex;align-items:center;gap:4px;}
+.hd-btn:hover{background:var(--bg2);color:var(--text);}
+.hd-btn svg{width:11px;height:11px;}
+.hd-btn.cta{background:var(--acc-s);border-color:rgba(108,99,255,.35);color:#c0c0ff;}
+.hd-btn.cta:hover{background:rgba(108,99,255,.25);}
+
+.lead-body{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px;}
+.lead-profile-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:14px;}
+.lp-row{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
+.lp-row:last-child{margin-bottom:0;}
+.lp-label{font-size:10.5px;color:var(--text3);width:90px;flex-shrink:0;}
+.lp-val{font-size:12.5px;color:var(--text);}
+.lp-pill{font-size:11px;padding:2px 9px;border-radius:6px;background:var(--acc-s);color:#c0c0ff;border:1px solid rgba(108,99,255,.25);}
+.conv-thread{display:flex;flex-direction:column;gap:9px;}
+.msg{display:flex;gap:8px;align-items:flex-start;}
+.msg.out{flex-direction:row-reverse;}
+.msg-av{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;flex-shrink:0;margin-top:2px;color:#fff;}
+.bub{max-width:82%;padding:9px 13px;border-radius:13px;font-size:13px;line-height:1.65;color:var(--text);}
+.msg.in .bub{background:var(--bg2);border:1px solid var(--border);border-radius:3px 13px 13px 13px;}
+.msg.out .bub{background:var(--acc2);border-radius:13px 3px 13px 13px;}
+.msg-ai-tag{font-size:9.5px;color:var(--text3);margin-top:3px;display:flex;align-items:center;gap:3px;}
+.msg-ai-tag.out{text-align:right;justify-content:flex-end;}
+.td{width:4px;height:4px;border-radius:50%;background:var(--text3);animation:td 1.2s infinite;display:inline-block;}
+.td:nth-child(2){animation-delay:.2s;}.td:nth-child(3){animation-delay:.4s;}
+@keyframes td{0%,80%,100%{opacity:.2;}40%{opacity:1;}}
+.typing-row{display:flex;gap:5px;padding:9px 13px;background:var(--bg2);border:1px solid var(--border);border-radius:3px 13px 13px 13px;align-items:center;width:fit-content;}
+
+.lead-inp-area{padding:12px 16px;border-top:1px solid var(--border);flex-shrink:0;}
+.ai-sugs-row{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px;}
+.ai-sug{font-size:11.5px;padding:4px 10px;border-radius:8px;border:1px solid rgba(108,99,255,.25);background:var(--acc-s);color:#c0c0ff;cursor:pointer;transition:all .12s;}
+.ai-sug:hover{background:rgba(108,99,255,.2);}
+.inp-bar{display:flex;gap:7px;}
+.inp-bar textarea{flex:1;background:var(--bg2);border:1px solid var(--border2);border-radius:10px;padding:8px 13px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);resize:none;height:40px;max-height:100px;outline:none;transition:border-color .14s;line-height:1.5;overflow-y:hidden;}
+.inp-bar textarea:focus{border-color:var(--acc);}
+.inp-bar textarea::placeholder{color:var(--text3);}
+.snd{width:40px;height:40px;border-radius:10px;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s;}
+.snd:disabled{opacity:.3;cursor:not-allowed;}
+.snd svg{width:16px;height:16px;}
+
+.lead-empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:var(--text3);}
+.lead-empty svg{width:40px;height:40px;opacity:.2;}
+
+/* NOVA STUDIO */
+.nova-shell{display:flex;flex:1;overflow:hidden;}
+.nova-left{flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:14px;border-right:1px solid var(--border);}
+.nova-right{width:290px;flex-shrink:0;background:var(--bg1);display:flex;flex-direction:column;}
+
+.nova-hero-banner{background:linear-gradient(135deg,rgba(255,201,71,.08),rgba(255,95,160,.06));border:1px solid rgba(255,201,71,.2);border-radius:14px;padding:16px 20px;display:flex;align-items:center;gap:14px;}
+.nova-hero-icon{width:42px;height:42px;border-radius:11px;background:linear-gradient(135deg,var(--gold),var(--gold2));display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.nova-hero-icon svg{width:20px;height:20px;}
+.nova-hero-title{font-family:'Syne',sans-serif;font-size:15px;font-weight:800;color:var(--gold);}
+.nova-hero-desc{font-size:12px;color:var(--text3);margin-top:2px;line-height:1.5;}
+
+.ntabs{display:flex;gap:5px;border-bottom:1px solid var(--border);margin-bottom:0;}
+.ntab{padding:9px 15px;border-radius:9px 9px 0 0;cursor:pointer;font-size:12.5px;font-weight:500;border:1px solid transparent;color:var(--text3);transition:all .14s;}
+.ntab.on{border-color:var(--border);border-bottom-color:var(--bg2);background:var(--bg2);color:var(--gold);}
+.ntab:hover:not(.on){color:var(--text2);}
+
+.nova-card{background:var(--bg1);border:1px solid var(--border);border-radius:14px;padding:18px;}
+.nova-card-title{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;margin-bottom:4px;}
+.nova-card-sub{font-size:11.5px;color:var(--text3);margin-bottom:14px;line-height:1.5;}
+
+.type-pills{display:flex;gap:6px;margin-bottom:14px;}
+.tpill{display:flex;align-items:center;gap:6px;padding:7px 13px;border-radius:9px;border:1px solid var(--border);background:var(--bg2);cursor:pointer;font-size:12.5px;font-weight:500;color:var(--text2);transition:all .14s;}
+.tpill:hover{border-color:var(--border2);color:var(--text);}
+.tpill.on{border-color:rgba(255,201,71,.4);background:var(--gold-s);color:var(--gold);}
+.tpill svg{width:13px;height:13px;}
+
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;}
+.form-label{font-size:9.5px;color:var(--text3);letter-spacing:.12em;text-transform:uppercase;font-weight:600;margin-bottom:6px;}
+.fsel{width:100%;background:var(--bg2);border:1px solid var(--border2);border-radius:9px;padding:9px 13px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);outline:none;cursor:pointer;transition:border-color .14s;}
+.fsel:focus{border-color:var(--gold);}
+.fsel option{background:var(--bg2);}
+.fta{width:100%;background:var(--bg2);border:1px solid var(--border2);border-radius:9px;padding:9px 13px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);resize:none;height:75px;outline:none;line-height:1.5;transition:border-color .14s;}
+.fta:focus{border-color:var(--gold);}
+.fta::placeholder{color:var(--text3);}
+
+.tone-pills{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px;}
+.tone-p{padding:4px 11px;border-radius:8px;border:1px solid var(--border);background:var(--bg2);font-size:11.5px;color:var(--text2);cursor:pointer;transition:all .12s;}
+.tone-p:hover{border-color:var(--border2);color:var(--text);}
+.tone-p.on{border-color:rgba(255,201,71,.4);background:var(--gold-s);color:var(--gold);}
+
+.sched-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px;}
+.sched-box{background:var(--bg2);border:1px solid var(--border);border-radius:9px;padding:9px 12px;}
+.sched-box label{display:block;font-size:9.5px;color:var(--text3);margin-bottom:5px;}
+.sched-box input,.sched-box select{width:100%;background:transparent;border:none;font-family:'DM Sans',sans-serif;font-size:12.5px;color:var(--text);outline:none;}
+
+.action-row{display:flex;gap:8px;}
+.btn-gen{flex:1;padding:12px;border-radius:10px;border:none;background:linear-gradient(135deg,var(--gold),var(--gold2));color:#1a0800;font-family:'Syne',sans-serif;font-size:13.5px;font-weight:700;cursor:pointer;transition:all .15s;letter-spacing:.01em;}
+.btn-gen:hover{opacity:.88;transform:translateY(-1px);}
+.btn-gen:disabled{opacity:.3;cursor:not-allowed;transform:none;}
+.btn-sec{padding:12px 18px;border-radius:10px;border:1px solid var(--border2);background:var(--bg2);color:var(--text2);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:all .15s;}
+.btn-sec:hover{border-color:var(--gold);color:var(--gold);}
+
+.nova-result-box{background:var(--bg2);border:1px solid var(--border2);border-radius:10px;padding:14px;display:none;}
+.nova-result-box.show{display:block;}
+.nova-result-label{font-size:9px;color:var(--text3);letter-spacing:.12em;text-transform:uppercase;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;}
+.nova-result-text{font-size:13px;color:var(--text2);line-height:1.7;white-space:pre-wrap;}
+.cp-btn{padding:3px 9px;border-radius:6px;border:1px solid var(--border2);background:transparent;color:var(--text3);font-size:10px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .12s;}
+.cp-btn:hover{color:var(--text);}
+.cp-btn.ok{color:var(--green);border-color:var(--green);}
+.tag-cloud{display:flex;flex-wrap:wrap;gap:5px;padding:8px 0;}
+.htag{font-size:11px;padding:3px 9px;border-radius:7px;background:rgba(108,99,255,.1);border:1px solid rgba(108,99,255,.2);color:var(--acc);cursor:pointer;}
+.sched-ok{background:var(--green-s);border:1px solid rgba(0,224,160,.2);border-radius:9px;padding:10px 14px;font-size:12.5px;color:var(--green);display:none;margin-top:8px;}
+.sched-ok.show{display:block;}
+
+/* Calendar */
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;}
+.cal-hd-row{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:6px;}
+.cal-dl{text-align:center;font-size:9.5px;color:var(--text3);letter-spacing:.08em;text-transform:uppercase;padding:4px 2px;}
+.cal-day{background:var(--bg2);border:1px solid var(--border);border-radius:9px;padding:7px 5px;min-height:64px;cursor:pointer;transition:all .14s;position:relative;}
+.cal-day:hover{border-color:var(--border2);}
+.cal-day.today{border-color:rgba(255,201,71,.4);background:var(--gold-s);}
+.cal-day-n{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3);margin-bottom:4px;}
+.cal-day.today .cal-day-n{color:var(--gold);font-weight:600;}
+.cal-post{font-size:9px;padding:2px 4px;border-radius:4px;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.cal-post.post{background:rgba(96,165,250,.15);color:#60a5fa;}
+.cal-post.reel{background:rgba(255,95,160,.15);color:var(--pink);}
+.cal-post.story{background:rgba(108,99,255,.15);color:var(--acc);}
+
+/* Auto-pilot */
+.ap-row{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px;}
+.ap-row-title{font-size:12.5px;font-weight:500;margin-bottom:10px;}
+.toggle-wrap{position:relative;width:36px;height:20px;cursor:pointer;flex-shrink:0;}
+.toggle-input{opacity:0;width:0;height:0;position:absolute;}
+.toggle-sl{position:absolute;inset:0;border-radius:20px;background:var(--bg3);border:1px solid var(--border2);transition:all .24s;}
+.toggle-sl::after{content:'';position:absolute;width:14px;height:14px;border-radius:50%;background:var(--text3);top:2px;left:2px;transition:all .24s;}
+.toggle-input:checked+.toggle-sl{background:linear-gradient(135deg,var(--gold),var(--gold2));border-color:var(--gold);}
+.toggle-input:checked+.toggle-sl::after{transform:translateX(16px);background:#fff;}
+
+/* Phone preview */
+.prev-hd{padding:12px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.prev-hd-title{font-size:11.5px;font-weight:600;color:var(--text2);}
+.prev-tabs2{display:flex;gap:4px;}
+.prev-tab2{padding:4px 9px;border-radius:6px;border:1px solid var(--border);color:var(--text3);font-size:10.5px;cursor:pointer;transition:all .12s;}
+.prev-tab2.on{border-color:rgba(255,201,71,.4);color:var(--gold);background:var(--gold-s);}
+.prev-body{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;align-items:center;gap:12px;}
+.phone{width:190px;background:#000;border-radius:28px;border:5px solid #1a1a1a;overflow:hidden;position:relative;}
+.phone::before{content:'';position:absolute;top:7px;left:50%;transform:translateX(-50%);width:55px;height:4px;background:#1a1a1a;border-radius:4px;z-index:10;}
+.phone-screen{padding-top:18px;}
+.ig-hd{display:flex;align-items:center;gap:7px;padding:8px 10px 5px;}
+.ig-av-sm{width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,var(--gold),var(--pink));flex-shrink:0;}
+.ig-usr{font-size:9.5px;font-weight:600;color:#fff;}
+.ig-follow{margin-left:auto;font-size:8.5px;color:#60a5fa;font-weight:600;}
+.ig-img-box{aspect-ratio:1;background:linear-gradient(135deg,#1a1640,#0a2018);display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;}
+.ig-img-ov{position:absolute;inset:0;background:linear-gradient(135deg,rgba(108,99,255,.2),rgba(255,95,160,.15));}
+.ig-headline{font-size:11.5px;font-weight:700;color:#fff;text-align:center;padding:10px;line-height:1.4;z-index:2;position:relative;}
+.ig-reel-badge{display:none;position:absolute;top:7px;right:7px;background:rgba(0,0,0,.6);border-radius:5px;padding:2px 6px;font-size:8.5px;color:#fff;font-weight:600;z-index:5;}
+.ig-actions{display:flex;align-items:center;gap:9px;padding:7px 10px;}
+.ig-actions svg{width:17px;height:17px;}
+.ig-likes{font-size:8.5px;color:#fff;font-weight:600;padding:0 10px 3px;}
+.ig-cap{font-size:7.5px;color:#ccc;padding:0 10px 4px;line-height:1.4;}
+.ig-tags{font-size:7px;color:#60a5fa;padding:0 10px 10px;line-height:1.5;}
+
+
+/* ════════════ MOBILE RESPONSIVE ════════════ */
+@media (max-width: 900px) {
+  body { font-size: 13px; }
+  .shell { flex-direction: column; height: 100vh; }
+
+  /* Sidebar vira topbar horizontal */
+  .sb {
+    width: 100%;
+    height: auto;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+    flex-direction: row;
+    overflow: hidden;
+  }
+  .sb-top { padding: 10px 14px; border-bottom: none; border-right: 1px solid var(--border); flex-shrink: 0; }
+  .sb-top .sb-nm { font-size: 13px; }
+  .sb-top .sb-tag { display: none; }
+  .sb-body {
+    flex-direction: row;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 8px;
+    gap: 4px;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+  }
+  .sb-sec { display: none; }
+  .ni {
+    flex-shrink: 0;
+    padding: 8px 12px;
+    white-space: nowrap;
+    font-size: 12px;
+  }
+  .ni svg { width: 13px; height: 13px; }
+  .nbadge { display: none; }
+  #sb-agents { display: none; }
+  .sb-foot { display: none; }
+
+  /* Topbar */
+  .topbar { padding: 0 12px; height: 44px; gap: 6px; }
+  .tb-title { font-size: 13px; }
+  .tb-div { display: none; }
+  .tb-sub { display: none; }
+  .tb-pill { padding: 4px 9px; font-size: 10px; }
+  .tb-pill:first-of-type { display: none; }
+
+  /* Views adapt */
+  .content { flex-direction: column; }
+
+  /* Overview KPIs */
+  .kpi-row { grid-template-columns: repeat(2, 1fr) !important; gap: 8px !important; }
+  .qa-row { grid-template-columns: repeat(3, 1fr) !important; gap: 6px !important; }
+  .ov-row { grid-template-columns: 1fr !important; gap: 8px !important; }
+  .ov-sc, .nova-sc, .int-sc { padding: 12px !important; gap: 10px !important; }
+  .panel, .nova-card, .gen-card { padding: 12px !important; }
+
+  /* Lead agent — stacks vertical */
+  .lead-shell { flex-direction: column; }
+  .lead-list-panel {
+    width: 100%;
+    max-height: 200px;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+  .lead-main { flex: 1; min-height: 0; }
+  .lead-hd { padding: 10px 12px; }
+  .lead-hd-r { display: none; }
+  .lead-body { padding: 10px; }
+  .lead-profile-card { padding: 10px; }
+  .lead-inp-area { padding: 8px 10px; }
+
+  /* Nova studio — stacks */
+  .nova-shell { flex-direction: column; }
+  .nova-left { border-right: none; padding: 12px; }
+  .nova-right { width: 100%; border-left: none; border-top: 1px solid var(--border); max-height: 400px; }
+  .nova-grid { grid-template-columns: 1fr !important; }
+  .form-row { grid-template-columns: 1fr !important; gap: 8px !important; }
+  .sched-row { grid-template-columns: 1fr 1fr !important; gap: 6px !important; }
+  .type-pills { flex-wrap: wrap; }
+  .tpill { padding: 6px 10px; font-size: 11.5px; }
+
+  /* Phone preview smaller */
+  .phone { width: 160px; }
+
+  /* Calendar */
+  .cal-grid { gap: 2px; }
+  .cal-day { padding: 4px 3px; min-height: 50px; }
+  .cal-day-n { font-size: 9px; }
+  .cal-post { font-size: 8px; padding: 1px 3px; }
+
+  /* Chat areas (mkt, sales, ads) */
+  [id^="v-"] > div > div[style*="grid-template-columns"],
+  [id^="v-"] > div[style*="display:flex"] {
+    flex-direction: column !important;
+  }
+  [id^="v-"] [style*="width:300px"],
+  [id^="v-"] [style*="width:290px"],
+  [id^="v-"] [style*="width:280px"] {
+    width: 100% !important;
+    border-left: none !important;
+    border-right: none !important;
+    border-top: 1px solid var(--border) !important;
+    max-height: 300px;
+  }
+
+  /* Ads KPI bar */
+  #ads-kpis { flex-wrap: wrap; gap: 4px !important; }
+  #ads-kpis > div { padding: 3px 8px !important; }
+
+  /* Buttons & inputs sizing */
+  .btn-gen, .nbtn, .lbtn { padding: 11px !important; font-size: 13px !important; }
+  textarea { font-size: 14px !important; } /* Prevents iOS zoom */
+  input[type="text"], input[type="password"], input[type="time"], input[type="date"], select {
+    font-size: 14px !important;
+  }
+
+  /* Modals */
+  #api-modal > div, #cors-modal > div {
+    width: 95vw !important;
+    padding: 20px !important;
+  }
+
+  /* Calendar in overview */
+  .funnel-bar { font-size: 10px; }
+}
+
+/* Telemóvel pequeno */
+@media (max-width: 480px) {
+  .kpi-row { grid-template-columns: 1fr 1fr !important; }
+  .qa-row { grid-template-columns: repeat(2, 1fr) !important; }
+  .kpi-v { font-size: 18px !important; }
+  .ni { padding: 7px 10px; font-size: 11.5px; }
+  .topbar { gap: 4px; padding: 0 10px; }
+  .tb-pill { padding: 3px 8px; }
+  .phone { width: 140px; }
+}
+
+/* Touch-friendly buttons */
+@media (hover: none) {
+  button, .ni, .ov-mr, .ov-ar, .qa, .crow, .cli, .lead-item, .tpill, .nova-stab, .ntab {
+    min-height: 36px;
+  }
+}
+
+</style>
+</head>
+<body>
+<div class="shell">
+
+<nav class="sb">
+  <div class="sb-top">
+    <div class="sb-gem"><svg viewBox="0 0 16 16" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round"><path d="M8 1l2 4 4 .5-3 3 .7 4L8 10.5 4.3 12.5l.7-4L2 5.5 6 5z"/></svg></div>
+    <div><div class="sb-nm">Command HQ</div><div class="sb-tag">Crypto &amp; Forex</div></div>
+  </div>
+  <div class="sb-body">
+    <div class="sb-sec">Principal</div>
+    <div class="ni on" id="n-ov" onclick="go('ov')"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><rect x="1" y="1" width="4" height="4" rx="1"/><rect x="9" y="1" width="4" height="4" rx="1"/><rect x="1" y="9" width="4" height="4" rx="1"/><rect x="9" y="9" width="4" height="4" rx="1"/></svg>Visão Geral</div>
+    <div class="ni" id="n-lead" onclick="go('lead')"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="M1 12c0-3 2.5-5 5.5-5S12 9 12 12M5 5a3 3 0 106 0"/><circle cx="11.5" cy="2.5" r="1.5" fill="currentColor"/></svg>Agente de Leads<span class="nbadge g">8 novas</span></div>
+    <div class="ni" id="n-nova" onclick="go('nova')"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><rect x="1" y="2" width="9" height="7" rx="1"/><path d="M4 13h9M10 2v7M7 9l3 4"/></svg>Nova · Studio<span class="nbadge gold">IA</span></div>
+    <div class="ni" id="n-ib" onclick="go('ib')"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="M1 3h12v8a1 1 0 01-1 1H2a1 1 0 01-1-1V3z"/><path d="M1 3l6 5 6-5"/></svg>Inbox<span class="nbadge a">5</span></div>
+    <div class="ni" id="n-fu" onclick="go('fu')"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="M1 7h12M7 1l6 6-6 6"/></svg>Follow-Up<span class="nbadge a">3</span></div>
+    <div class="ni" id="n-mkt" onclick="go('mkt')"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="M1 10l2-2 2 2 2-4 2 2 2-3 1 1"/><rect x="1" y="1" width="12" height="12" rx="2"/></svg>Agente Marketing<span class="nbadge gold">IA</span></div>
+    <div class="ni" id="n-sales" onclick="go('sales')"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="M2 10l3-4 3 2.5 4-6"/><circle cx="12" cy="4" r="1.5" fill="currentColor"/></svg>Agente Vendas<span class="nbadge new">IA</span></div>
+    <div class="ni" id="n-ads" onclick="go('ads')"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><rect x="1" y="3" width="12" height="9" rx="1"/><path d="M1 6h12M5 3V1M9 3V1"/></svg>Meta Ads IA<span class="nbadge new">IA</span></div>
+    <div class="ni" id="n-rep" onclick="go('rep')"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="M1 10l3-4 3 2 3-5 3 3"/></svg>Relatórios</div>
+    <div class="sb-sec">Agentes IA</div>
+    <div id="sb-agents"></div>
+  </div>
+  <div class="sb-foot">
+    <div style="display:flex;align-items:center;gap:9px;padding:6px 8px;border-radius:9px;">
+      <div style="width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--acc),var(--pink));display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;">CF</div>
+      <div><div style="font-size:12.5px;font-weight:500;">Trader</div><div style="font-size:9.5px;color:var(--text3);">Crypto &amp; Forex</div></div>
+    </div>
+  </div>
+</nav>
+
+<div class="main">
+  <div class="topbar">
+    <div class="tb-title" id="tb-title">Visão Geral</div>
+    <div class="tb-div"></div>
+    <div class="tb-sub" id="tb-sub">Dashboard de controlo</div>
+    <div class="tb-sp"></div>
+    <div class="tb-pill"><div class="ldot"></div>&nbsp;Sistema ativo</div>
+    <div class="tb-pill" style="margin-left:6px;"><span id="clk">--:--</span></div>
+    <button onclick="showApiKeyModal()" style="padding:5px 12px;border-radius:20px;border:1px solid rgba(66,133,244,.35);background:rgba(66,133,244,.1);color:#60a5fa;font-size:11px;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:500;">🔑 Gemini API</button>
+  </div>
+
+  <div class="content">
+
+    <!-- OVERVIEW -->
+    <div class="view on" id="v-ov">
+      <div class="ov-sc">
+        <div class="kpi-row">
+          <div class="kpi k1"><div class="kpi-l">Leads este mês</div><div class="kpi-v" style="color:var(--gold);">47</div><div class="kpi-c up">▲ +12 esta semana</div></div>
+          <div class="kpi k2"><div class="kpi-l">Leads qualificadas</div><div class="kpi-v" style="color:var(--green);">23</div><div class="kpi-c up">▲ 48.9% taxa</div></div>
+          <div class="kpi k3"><div class="kpi-l">Conversões</div><div class="kpi-v" style="color:var(--acc);">8</div><div class="kpi-c up">▲ €3,976 receita</div></div>
+          <div class="kpi k4"><div class="kpi-l">Posts publicados</div><div class="kpi-v" style="color:var(--pink);">47</div><div class="kpi-c up">▲ 4.8% engagement</div></div>
+          <div class="kpi k5"><div class="kpi-l">Alcance Instagram</div><div class="kpi-v" style="color:var(--teal);">48.2K</div><div class="kpi-c up">▲ +23% este mês</div></div>
+        </div>
+        <div class="qa-row">
+          <div class="qa" onclick="go('lead')"><div class="qa-ico" style="background:rgba(0,224,160,.1);"><svg viewBox="0 0 16 16" fill="none" stroke="#00e0a0" stroke-width="1.6" stroke-linecap="round"><path d="M1 14c0-3.3 3.1-6 7-6s7 2.7 7 6M8 8a4 4 0 100-8 4 4 0 000 8z"/><circle cx="13" cy="3" r="1.5" fill="#00e0a0" stroke="none"/></svg></div><div class="qa-lbl" style="color:#00e0a0;">Agente Leads</div></div>
+          <div class="qa" onclick="go('nova')"><div class="qa-ico" style="background:var(--gold-s);"><svg viewBox="0 0 16 16" fill="none" stroke="#ffc947" stroke-width="1.6" stroke-linecap="round"><path d="M8 1l2 4 4 .5-3 3 .7 4L8 10.5 4.3 12.5l.7-4L2 5.5 6 5z"/></svg></div><div class="qa-lbl" style="color:var(--gold);">Nova Studio</div></div>
+          <div class="qa" onclick="go('ib')"><div class="qa-ico" style="background:var(--green-s);"><svg viewBox="0 0 16 16" fill="none" stroke="#00e0a0" stroke-width="1.6" stroke-linecap="round"><path d="M13 2H3a1 1 0 00-1 1v8a1 1 0 001 1h2l3 2 3-2h2a1 1 0 001-1V3a1 1 0 00-1-1z"/></svg></div><div class="qa-lbl" style="color:#00e0a0;">WhatsApp</div></div>
+          <div class="qa" onclick="go('fu')"><div class="qa-ico" style="background:var(--amber-s);"><svg viewBox="0 0 16 16" fill="none" stroke="#ffb347" stroke-width="1.6" stroke-linecap="round"><path d="M1 8h14M8 2l7 6-7 6"/></svg></div><div class="qa-lbl" style="color:#ffb347;">Follow-Up</div></div>
+          <div class="qa" onclick="go('mkt')"><div class="qa-ico" style="background:rgba(255,201,71,.1);"><svg viewBox="0 0 16 16" fill="none" stroke="#ffc947" stroke-width="1.6" stroke-linecap="round"><path d="M1 11l2-3 2 2 3-5 2 2 3-4 1 2"/><rect x="1" y="1" width="14" height="14" rx="2"/></svg></div><div class="qa-lbl" style="color:#ffc947;">Marketing IA</div></div>
+          <div class="qa" onclick="go('sales')"><div class="qa-ico" style="background:rgba(0,224,160,.1);"><svg viewBox="0 0 16 16" fill="none" stroke="#00e0a0" stroke-width="1.6" stroke-linecap="round"><path d="M1 11l3-5 3 2.5 4-6"/><circle cx="13" cy="4" r="2" fill="#00e0a0" stroke="none"/></svg></div><div class="qa-lbl" style="color:#00e0a0;">Vendas IA</div></div>
+          <div class="qa" onclick="go('rep')"><div class="qa-ico" style="background:var(--acc-s);"><svg viewBox="0 0 16 16" fill="none" stroke="#6c63ff" stroke-width="1.6" stroke-linecap="round"><path d="M1 11l3-5 3 2.5 3-6 3 3.5"/></svg></div><div class="qa-lbl" style="color:#6c63ff;">Relatório</div></div>
+        </div>
+        <div class="ov-row">
+          <div class="panel">
+            <div class="ph"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"><path d="M1 10l3-4 3 2 3-5 2 3"/></svg>Funil de leads</div>
+            <div id="ov-funnel"></div>
+          </div>
+          <div class="panel">
+            <div class="ph"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"><circle cx="6" cy="4" r="2.5"/><path d="M1 11c0-2.5 2.2-4.5 5-4.5s5 2 5 4.5"/></svg>Leads recentes</div>
+            <div id="ov-leads"></div>
+          </div>
+        </div>
+        <div class="ov-row">
+          <div class="panel">
+            <div class="ph"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"><path d="M1 8l2-3 3 2 3-5 2 3"/></svg>Mercado</div>
+            <div id="ov-tkr"></div>
+          </div>
+          <div class="panel">
+            <div class="ph"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"><rect x="1" y="2" width="10" height="9" rx="1"/><path d="M1 5h10M4 2V1M8 2V1"/></svg>Próximas publicações</div>
+            <div id="ov-posts"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AGENTE DE LEADS -->
+    <div class="view" id="v-lead">
+      <div class="lead-shell">
+        <div class="lead-list-panel">
+          <div class="lead-tabs">
+            <div class="lead-tab on" id="lt-all" onclick="setLeadTab('all')">Todas (23)</div>
+            <div class="lead-tab" id="lt-hot" onclick="setLeadTab('hot')">🔥 Quentes (5)</div>
+          </div>
+          <div class="lead-srch"><input type="text" placeholder="Pesquisar lead..." id="lead-srch" oninput="filterLeads()"></div>
+          <div class="lead-list" id="lead-list"></div>
+        </div>
+        <div class="lead-main" id="lead-main">
+          <div class="lead-empty"><svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round"><circle cx="20" cy="14" r="7"/><path d="M5 36c0-8.3 6.7-15 15-15s15 6.7 15 15"/></svg><div style="font-size:12px;margin-top:8px;">Seleciona uma lead</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- NOVA STUDIO -->
+    <div class="view" id="v-nova">
+      <div class="nova-shell">
+        <div class="nova-left">
+          <div class="nova-hero-banner">
+            <div class="nova-hero-icon"><svg viewBox="0 0 20 20" fill="none" stroke="#1a0800" stroke-width="2.2" stroke-linecap="round" width="20" height="20"><path d="M10 2l2.5 5 5.5.7-4 3.9 1 5.4L10 14.5 5 17l1-5.4-4-3.9 5.5-.7z"/></svg></div>
+            <div>
+              <div class="nova-hero-title">Nova — Content Studio</div>
+              <div class="nova-hero-desc">Gera posts, reels, stories e carrosseis automaticamente. Auto-pilot publica no horário ideal.</div>
+            </div>
+            <div style="margin-left:auto;display:flex;align-items:center;gap:8px;">
+              <div style="padding:4px 12px;border-radius:20px;background:var(--green-s);border:1px solid rgba(0,224,160,.2);color:var(--green);font-size:10.5px;font-weight:600;">● Ativo</div>
+              <label class="toggle-wrap"><input type="checkbox" class="toggle-input" id="ap-toggle" checked><span class="toggle-sl"></span></label>
+            </div>
+          </div>
+
+          <div class="ntabs">
+            <div class="ntab on" id="nt-gen" onclick="novaTab('gen')">✨ Gerar</div>
+            <div class="ntab" id="nt-cal" onclick="novaTab('cal')">📅 Calendário</div>
+            <div class="ntab" id="nt-auto" onclick="novaTab('auto')">⚡ Auto-pilot</div>
+            <div class="ntab" id="nt-stats" onclick="novaTab('stats')">📊 Analytics</div>
+          </div>
+
+          <!-- TAB GERAR -->
+          <div id="ntab-gen" style="display:flex;flex-direction:column;gap:12px;">
+            <div class="type-pills">
+              <div class="tpill on" id="tp-post" onclick="setNType('post')"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><rect x="1" y="1" width="12" height="12" rx="2"/></svg>Post</div>
+              <div class="tpill" id="tp-reel" onclick="setNType('reel')"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><rect x="2" y="1" width="10" height="12" rx="1"/><path d="M5 4l5 3-5 3V4z"/></svg>Reel</div>
+              <div class="tpill" id="tp-story" onclick="setNType('story')"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><circle cx="7" cy="7" r="6"/><circle cx="7" cy="7" r="2.5"/></svg>Story</div>
+              <div class="tpill" id="tp-carrossel" onclick="setNType('carrossel')"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><rect x="1" y="3" width="8" height="8" rx="1"/><rect x="5" y="1" width="8" height="8" rx="1" opacity=".5"/></svg>Carrossel</div>
+            </div>
+            <div class="form-row">
+              <div><div class="form-label">Tema</div>
+                <select class="fsel" id="n-tema">
+                  <option value="analise">📊 Análise de mercado</option>
+                  <option value="educacao">📚 Educação financeira</option>
+                  <option value="robo">🤖 Robots de trading</option>
+                  <option value="sinal">🎯 Sinal de trading</option>
+                  <option value="motivacao">🔥 Motivação / mindset</option>
+                  <option value="resultados">💰 Resultados / prova social</option>
+                  <option value="erro">⚠️ Erros comuns de traders</option>
+                  <option value="previsao">🔮 Previsão semanal</option>
+                </select>
+              </div>
+              <div><div class="form-label">Mercado</div>
+                <select class="fsel" id="n-mercado">
+                  <option>🪙 Bitcoin / Crypto</option>
+                  <option>💱 Forex (EUR/USD)</option>
+                  <option>⚡ Crypto + Forex</option>
+                  <option>🥇 XAU/USD (Ouro)</option>
+                  <option>🤖 Robots de trading</option>
+                </select>
+              </div>
+            </div>
+            <div><div class="form-label" style="margin-bottom:6px;">Contexto adicional</div>
+              <textarea class="fta" id="n-ctx" placeholder="Ex: BTC rompeu os 67k esta manhã, volume acima da média. Robot gerou +8% esta semana..."></textarea>
+            </div>
+            <div><div class="form-label" style="margin-bottom:8px;">Tom de voz</div>
+              <div class="tone-pills" id="n-tones"></div>
+            </div>
+            <div class="sched-row">
+              <div class="sched-box"><label>Data</label><input type="date" id="n-date"></div>
+              <div class="sched-box"><label>Hora</label><input type="time" id="n-time" value="09:00"></div>
+              <div class="sched-box"><label>Hora ideal</label><div style="font-size:12px;color:var(--gold);font-weight:600;margin-top:3px;">09:00 ou 18:00</div></div>
+            </div>
+            <div class="action-row">
+              <button class="btn-gen" id="n-btn-gen" onclick="novaGenerate()">✨ Gerar com IA</button>
+              <button class="btn-sec" onclick="novaGenAndSched()">⚡ Gerar + Agendar</button>
+            </div>
+            <div class="nova-result-box" id="n-result">
+              <div class="nova-result-label">
+                <span id="n-result-label">CONTEÚDO GERADO</span>
+                <div style="display:flex;gap:5px;">
+                  <button class="cp-btn" id="n-copy-btn" onclick="novaCopy()">Copiar</button>
+                  <button class="cp-btn" onclick="novaSched()" style="border-color:rgba(255,201,71,.3);color:var(--gold);">Agendar</button>
+                  <button class="cp-btn" onclick="novaRegen()" style="border-color:rgba(108,99,255,.3);color:var(--acc);">Regenerar</button>
+                </div>
+              </div>
+              <div class="nova-result-text" id="n-result-text"></div>
+              <div class="tag-cloud" id="n-tags"></div>
+            </div>
+            <div class="sched-ok" id="n-sched-ok"></div>
+          </div>
+
+          <!-- TAB CALENDÁRIO -->
+          <div id="ntab-cal" style="display:none;flex-direction:column;gap:12px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+              <div style="font-family:'Syne',sans-serif;font-size:16px;font-weight:800;">Calendário de Conteúdo</div>
+              <div style="display:flex;gap:6px;align-items:center;">
+                <button onclick="calPrev()" style="padding:5px 10px;border-radius:7px;border:1px solid var(--border);background:var(--bg2);color:var(--text2);cursor:pointer;">‹</button>
+                <div id="cal-month-label" style="font-size:13px;font-weight:500;min-width:110px;text-align:center;"></div>
+                <button onclick="calNext()" style="padding:5px 10px;border-radius:7px;border:1px solid var(--border);background:var(--bg2);color:var(--text2);cursor:pointer;">›</button>
+              </div>
+            </div>
+            <div class="cal-hd-row"><div class="cal-dl">Seg</div><div class="cal-dl">Ter</div><div class="cal-dl">Qua</div><div class="cal-dl">Qui</div><div class="cal-dl">Sex</div><div class="cal-dl">Sáb</div><div class="cal-dl">Dom</div></div>
+            <div class="cal-grid" id="n-cal-grid"></div>
+            <div style="display:flex;gap:12px;"><div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text3);"><div style="width:8px;height:8px;border-radius:3px;background:rgba(96,165,250,.4);"></div>Post</div><div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text3);"><div style="width:8px;height:8px;border-radius:3px;background:rgba(255,95,160,.4);"></div>Reel</div><div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text3);"><div style="width:8px;height:8px;border-radius:3px;background:rgba(108,99,255,.4);"></div>Story</div></div>
+          </div>
+
+          <!-- TAB AUTO-PILOT -->
+          <div id="ntab-auto" style="display:none;flex-direction:column;gap:10px;">
+            <div class="ap-row"><div class="ap-row-title">📅 Dias de publicação</div><div style="display:grid;grid-template-columns:repeat(7,1fr);gap:5px;" id="n-days"></div></div>
+            <div class="ap-row"><div class="ap-row-title">⏰ Horários</div><div style="display:flex;flex-wrap:wrap;gap:6px;" id="n-times"></div></div>
+            <div class="ap-row"><div class="ap-row-title">🎯 Mix de conteúdo</div><div id="n-mix" style="display:flex;flex-direction:column;gap:8px;"></div></div>
+            <div class="ap-row" style="display:flex;align-items:center;justify-content:space-between;">
+              <div><div style="font-size:12.5px;font-weight:500;">🔔 Aprovação antes de publicar</div><div style="font-size:11.5px;color:var(--text3);margin-top:2px;">Aprovas cada post antes de ir ao ar</div></div>
+              <label class="toggle-wrap"><input type="checkbox" class="toggle-input" id="n-approval"><span class="toggle-sl"></span></label>
+            </div>
+            <button onclick="alert('✅ Auto-pilot configurado! A Nova começa a publicar automaticamente.')" class="btn-gen">💾 Guardar configuração</button>
+          </div>
+
+          <!-- TAB ANALYTICS -->
+          <div id="ntab-stats" style="display:none;flex-direction:column;gap:12px;">
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;">
+              <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:13px;position:relative;overflow:hidden;"><div style="position:absolute;top:0;left:0;right:0;height:2px;background:var(--gold);"></div><div style="font-size:9.5px;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px;">Alcance</div><div style="font-family:'JetBrains Mono',monospace;font-size:21px;color:var(--gold);">48.2K</div><div style="font-size:10.5px;color:var(--green);margin-top:3px;">▲ +23%</div></div>
+              <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:13px;position:relative;overflow:hidden;"><div style="position:absolute;top:0;left:0;right:0;height:2px;background:var(--pink);"></div><div style="font-size:9.5px;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px;">Seguidores</div><div style="font-family:'JetBrains Mono',monospace;font-size:21px;color:var(--pink);">+847</div><div style="font-size:10.5px;color:var(--green);margin-top:3px;">▲ +31%</div></div>
+              <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:13px;position:relative;overflow:hidden;"><div style="position:absolute;top:0;left:0;right:0;height:2px;background:var(--green);"></div><div style="font-size:9.5px;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px;">Engagement</div><div style="font-family:'JetBrains Mono',monospace;font-size:21px;color:var(--green);">4.8%</div><div style="font-size:10.5px;color:var(--green);margin-top:3px;">▲ acima média</div></div>
+              <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:13px;position:relative;overflow:hidden;"><div style="position:absolute;top:0;left:0;right:0;height:2px;background:var(--acc);"></div><div style="font-size:9.5px;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px;">Posts/mês</div><div style="font-family:'JetBrains Mono',monospace;font-size:21px;color:var(--acc);">47</div><div style="font-size:10.5px;color:var(--text3);margin-top:3px;">meta: 60</div></div>
+            </div>
+            <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:14px;">
+              <div style="font-size:13px;font-weight:600;margin-bottom:12px;">Performance por tipo</div>
+              <div style="display:flex;flex-direction:column;gap:7px;">
+                <div style="display:flex;align-items:center;gap:10px;"><div style="font-size:11px;color:var(--text2);width:70px;text-align:right;">Reels</div><div style="flex:1;height:7px;background:var(--bg3);border-radius:4px;overflow:hidden;"><div style="height:100%;width:88%;background:linear-gradient(90deg,var(--pink),var(--acc));border-radius:4px;"></div></div><div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3);width:32px;">8.2%</div></div>
+                <div style="display:flex;align-items:center;gap:10px;"><div style="font-size:11px;color:var(--text2);width:70px;text-align:right;">Carrossel</div><div style="flex:1;height:7px;background:var(--bg3);border-radius:4px;overflow:hidden;"><div style="height:100%;width:72%;background:linear-gradient(90deg,var(--gold),var(--gold2));border-radius:4px;"></div></div><div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3);width:32px;">6.7%</div></div>
+                <div style="display:flex;align-items:center;gap:10px;"><div style="font-size:11px;color:var(--text2);width:70px;text-align:right;">Análise</div><div style="flex:1;height:7px;background:var(--bg3);border-radius:4px;overflow:hidden;"><div style="height:100%;width:55%;background:linear-gradient(90deg,var(--acc),var(--teal));border-radius:4px;"></div></div><div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3);width:32px;">5.1%</div></div>
+              </div>
+            </div>
+            <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:14px;">
+              <div style="font-size:13px;font-weight:600;margin-bottom:8px;">💡 Sugestões da Nova IA</div>
+              <div style="display:flex;flex-direction:column;gap:6px;">
+                <div style="padding:8px 11px;border-radius:8px;background:var(--bg3);border:1px solid var(--border);font-size:12.5px;color:var(--text2);line-height:1.5;">📹 Reels têm 3x mais alcance. Publica pelo menos 3/semana.</div>
+                <div style="padding:8px 11px;border-radius:8px;background:var(--bg3);border:1px solid var(--border);font-size:12.5px;color:var(--text2);line-height:1.5;">⏰ Melhor horário: 09:00 e 18:00 — engagement 40% acima da média.</div>
+                <div style="padding:8px 11px;border-radius:8px;background:var(--bg3);border:1px solid var(--border);font-size:12.5px;color:var(--text2);line-height:1.5;">🤖 Conteúdo sobre robots de trading tem 2x mais leads geradas.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- PHONE PREVIEW -->
+        <div class="nova-right">
+          <div class="prev-hd">
+            <div class="prev-hd-title">Preview</div>
+            <div class="prev-tabs2">
+              <div class="prev-tab2 on" id="pv-feed" onclick="setPrevTab('feed')">Feed</div>
+              <div class="prev-tab2" id="pv-reel" onclick="setPrevTab('reel')">Reel</div>
+            </div>
+          </div>
+          <div class="prev-body">
+            <div class="phone">
+              <div class="phone-screen">
+                <div class="ig-hd"><div class="ig-av-sm"></div><div><div class="ig-usr">trader_crypto_pt</div><div style="font-size:7.5px;color:#888;">Agora</div></div><div class="ig-follow">Seguir</div></div>
+                <div class="ig-img-box" id="pv-img">
+                  <div class="ig-img-ov"></div>
+                  <div id="pv-reel-badge" class="ig-reel-badge">▶ REEL</div>
+                  <div class="ig-headline" id="pv-headline">Gera conteúdo para ver o preview ✨</div>
+                </div>
+                <div class="ig-actions">
+                  <svg viewBox="0 0 18 18" fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round"><path d="M9 15.5C9 15.5 1.5 11 1.5 6A4.5 4.5 0 019 3.1 4.5 4.5 0 0116.5 6c0 5-7.5 9.5-7.5 9.5z"/></svg>
+                  <svg viewBox="0 0 18 18" fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round" style="margin-left:4px;"><path d="M2 16l3.5-1L15 5.5a2.1 2.1 0 00-3-3L2.5 12.5z"/></svg>
+                  <svg viewBox="0 0 18 18" fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round"><path d="M3 9l6-6 6 6M9 3v12"/></svg>
+                  <svg viewBox="0 0 18 18" fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round" style="margin-left:auto;"><rect x="3" y="3" width="12" height="12" rx="2"/></svg>
+                </div>
+                <div class="ig-likes">847 gostos</div>
+                <div class="ig-cap" id="pv-cap">Gera um post ou reel para ver a pré-visualização aqui.</div>
+                <div class="ig-tags" id="pv-tags">#crypto #forex #trading #robots</div>
+              </div>
+            </div>
+            <div style="width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:11px;">
+              <div style="font-size:9px;color:var(--text3);letter-spacing:.12em;text-transform:uppercase;margin-bottom:8px;">Próximas publicações</div>
+              <div style="display:flex;flex-direction:column;">
+                <div style="display:flex;align-items:center;gap:7px;padding:6px 0;border-bottom:1px solid var(--border);"><div style="width:7px;height:7px;border-radius:50%;background:var(--acc);flex-shrink:0;"></div><div style="flex:1;font-size:11px;">Análise BTC 67k</div><div style="font-size:9.5px;color:var(--text3);">Hoje 09:00</div></div>
+                <div style="display:flex;align-items:center;gap:7px;padding:6px 0;border-bottom:1px solid var(--border);"><div style="width:7px;height:7px;border-radius:50%;background:var(--pink);flex-shrink:0;"></div><div style="flex:1;font-size:11px;">Reel — Robot +8%</div><div style="font-size:9.5px;color:var(--text3);">Hoje 18:00</div></div>
+                <div style="display:flex;align-items:center;gap:7px;padding:6px 0;"><div style="width:7px;height:7px;border-radius:50%;background:var(--acc);flex-shrink:0;"></div><div style="flex:1;font-size:11px;">Post Forex EUR/USD</div><div style="font-size:9.5px;color:var(--text3);">Amanhã 09:00</div></div>
+              </div>
+            </div>
+            <div style="width:100%;background:rgba(255,201,71,.06);border:1px solid rgba(255,201,71,.15);border-radius:10px;padding:11px;">
+              <div style="font-size:9px;color:var(--gold);letter-spacing:.12em;text-transform:uppercase;margin-bottom:6px;font-weight:600;">💡 Dica Nova IA</div>
+              <div id="nova-tip" style="font-size:11.5px;color:var(--text2);line-height:1.6;">Conteúdo sobre robots de trading gera 2x mais leads qualificadas.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- MARKETING AGENT -->
+    <div class="view" id="v-mkt">
+      <div style="display:flex;flex:1;overflow:hidden;">
+        <!-- LEFT: CHAT -->
+        <div style="flex:1;display:flex;flex-direction:column;overflow:hidden;border-right:1px solid var(--border);">
+          <div style="padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;flex-shrink:0;">
+            <div style="width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#ffc947,#ff9d00);display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;color:#1a0800;flex-shrink:0;">MK</div>
+            <div>
+              <div style="font-family:'Syne',sans-serif;font-size:14px;font-weight:800;">Agente de Marketing IA</div>
+              <div style="font-size:10.5px;color:var(--text3);">Posts · Reels · Conteúdo Viral · Automação Instagram & WhatsApp</div>
+            </div>
+            <div style="margin-left:auto;display:flex;gap:6px;">
+              <div style="padding:4px 12px;border-radius:20px;background:var(--green-s);border:1px solid rgba(0,224,160,.2);color:var(--green);font-size:10.5px;font-weight:600;">● Online</div>
+            </div>
+          </div>
+          <div style="flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px;" id="mkt-msgs"></div>
+          <div style="padding:10px 14px;border-top:1px solid var(--border);display:flex;flex-wrap:wrap;gap:5px;" id="mkt-sugs"></div>
+          <div style="padding:10px 14px;border-top:1px solid var(--border);display:flex;gap:7px;flex-shrink:0;">
+            <textarea id="mkt-inp" placeholder="Ex: Cria 5 Reels sobre robots de trading crypto..." rows="1" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();mktSend();}" oninput="arTA(this)" style="flex:1;background:var(--bg2);border:1px solid var(--border2);border-radius:10px;padding:8px 12px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);resize:none;height:40px;max-height:110px;outline:none;line-height:1.5;overflow-y:hidden;"></textarea>
+            <button onclick="mktSend()" id="mkt-snd" style="width:40px;height:40px;border-radius:10px;border:none;background:linear-gradient(135deg,#ffc947,#ff9d00);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><svg viewBox="0 0 16 16" fill="none" stroke="#1a0800" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2L8 8M14 2L10 14L8 8M14 2L2 6L8 8"/></svg></button>
+          </div>
+        </div>
+        <!-- RIGHT: TOOLS -->
+        <div style="width:300px;flex-shrink:0;background:var(--bg1);overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px;">
+          <div style="font-size:9.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);">Ferramentas rápidas</div>
+          <div id="mkt-tools"></div>
+          <div style="font-size:9.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);margin-top:4px;">Calendário editorial</div>
+          <div id="mkt-cal"></div>
+          <div style="font-size:9.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);margin-top:4px;">Hooks virais</div>
+          <div id="mkt-hooks"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SALES AGENT -->
+    <div class="view" id="v-sales">
+      <div style="display:flex;flex:1;overflow:hidden;">
+        <!-- LEFT: CHAT -->
+        <div style="flex:1;display:flex;flex-direction:column;overflow:hidden;border-right:1px solid var(--border);">
+          <div style="padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;flex-shrink:0;">
+            <div style="width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,var(--green),var(--teal));display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;color:#001a10;flex-shrink:0;">VD</div>
+            <div>
+              <div style="font-family:'Syne',sans-serif;font-size:14px;font-weight:800;">Agente de Vendas IA</div>
+              <div style="font-size:10.5px;color:var(--text3);">Qualificação · Conversão · Fechamento · Follow-up automático</div>
+            </div>
+            <div style="margin-left:auto;display:flex;gap:6px;">
+              <div style="padding:4px 12px;border-radius:20px;background:var(--green-s);border:1px solid rgba(0,224,160,.2);color:var(--green);font-size:10.5px;font-weight:600;">● Online</div>
+            </div>
+          </div>
+          <div style="flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px;" id="sales-msgs"></div>
+          <div style="padding:10px 14px;border-top:1px solid var(--border);display:flex;flex-wrap:wrap;gap:5px;" id="sales-sugs"></div>
+          <div style="padding:10px 14px;border-top:1px solid var(--border);display:flex;gap:7px;flex-shrink:0;">
+            <textarea id="sales-inp" placeholder="Ex: Atenda lead interessado em robot de trading forex com €2.000..." rows="1" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();salesSend();}" oninput="arTA(this)" style="flex:1;background:var(--bg2);border:1px solid var(--border2);border-radius:10px;padding:8px 12px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);resize:none;height:40px;max-height:110px;outline:none;line-height:1.5;overflow-y:hidden;"></textarea>
+            <button onclick="salesSend()" id="sales-snd" style="width:40px;height:40px;border-radius:10px;border:none;background:linear-gradient(135deg,var(--green),var(--teal));cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><svg viewBox="0 0 16 16" fill="none" stroke="#001a10" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2L8 8M14 2L10 14L8 8M14 2L2 6L8 8"/></svg></button>
+          </div>
+        </div>
+        <!-- RIGHT: PIPELINE -->
+        <div style="width:300px;flex-shrink:0;background:var(--bg1);overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px;">
+          <div style="font-size:9.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);">Pipeline de vendas</div>
+          <div id="sales-pipeline"></div>
+          <div style="font-size:9.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);margin-top:4px;">Objeções frequentes</div>
+          <div id="sales-objections"></div>
+          <div style="font-size:9.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);margin-top:4px;">Scripts de fechamento</div>
+          <div id="sales-scripts"></div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- META ADS IA -->
+    <div class="view" id="v-ads">
+      <div style="display:flex;flex:1;overflow:hidden;">
+
+        <!-- LEFT: DASHBOARD + CHAT -->
+        <div style="flex:1;display:flex;flex-direction:column;overflow:hidden;">
+
+          <!-- KPI BAR -->
+          <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;gap:8px;align-items:center;flex-shrink:0;background:var(--bg1);">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <div style="width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,#1877f2,#e040fb);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <svg viewBox="0 0 16 16" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" width="16" height="16"><rect x="1" y="3" width="14" height="11" rx="1"/><path d="M1 7h14M6 3V1M10 3V1"/></svg>
+              </div>
+              <div>
+                <div style="font-family:'Syne',sans-serif;font-size:13px;font-weight:800;">Meta Ads IA</div>
+                <div style="font-size:10px;color:var(--text3);">Instagram &amp; Facebook Ads</div>
+              </div>
+            </div>
+            <div style="display:flex;gap:6px;margin-left:8px;flex-wrap:wrap;" id="ads-kpis"></div>
+            <div style="margin-left:auto;display:flex;gap:5px;">
+              <div style="padding:4px 10px;border-radius:20px;background:var(--green-s);border:1px solid rgba(0,224,160,.2);color:var(--green);font-size:10.5px;font-weight:600;">● Campanhas ativas</div>
+              <button onclick="adsGenReport()" style="padding:4px 11px;border-radius:7px;border:1px solid var(--border2);background:var(--bg2);color:var(--text2);font-size:11px;cursor:pointer;font-family:'DM Sans',sans-serif;">📊 Relatório</button>
+            </div>
+          </div>
+
+          <!-- CAMPAIGNS TABLE -->
+          <div style="padding:12px 16px;border-bottom:1px solid var(--border);flex-shrink:0;">
+            <div style="font-size:9.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);margin-bottom:8px;">Campanhas em curso</div>
+            <div id="ads-campaigns"></div>
+          </div>
+
+          <!-- CHAT -->
+          <div style="flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px;" id="ads-msgs"></div>
+          <div style="padding:8px 14px;border-top:1px solid var(--border);display:flex;flex-wrap:wrap;gap:5px;" id="ads-sugs"></div>
+          <div style="padding:10px 14px;border-top:1px solid var(--border);display:flex;gap:7px;flex-shrink:0;">
+            <textarea id="ads-inp" placeholder="Ex: Cria campanha de leads para robot crypto, orcamento 20 euros/dia, publico Portugal..." rows="1" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();adsSend();}" oninput="arTA(this)" style="flex:1;background:var(--bg2);border:1px solid var(--border2);border-radius:10px;padding:8px 12px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);resize:none;height:40px;max-height:110px;outline:none;line-height:1.5;overflow-y:hidden;"></textarea>
+            <button onclick="adsSend()" id="ads-snd" style="width:40px;height:40px;border-radius:10px;border:none;background:linear-gradient(135deg,#1877f2,#e040fb);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><svg viewBox="0 0 16 16" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2L8 8M14 2L10 14L8 8M14 2L2 6L8 8"/></svg></button>
+          </div>
+        </div>
+
+        <!-- RIGHT: TOOLS -->
+        <div style="width:300px;flex-shrink:0;background:var(--bg1);border-left:1px solid var(--border);overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px;">
+
+          <div style="font-size:9.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);">Automacoes rapidas</div>
+          <div id="ads-tools"></div>
+
+          <div style="font-size:9.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);margin-top:4px;">Criativos ativos</div>
+          <div id="ads-creatives"></div>
+
+          <div style="font-size:9.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);margin-top:4px;">Alertas</div>
+          <div id="ads-alerts"></div>
+
+          <div style="font-size:9.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);margin-top:4px;">Publicos</div>
+          <div id="ads-audiences"></div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- INBOX -->
+    <div class="view" id="v-ib">
+      <div style="flex:1;display:flex;align-items:center;justify-content:center;color:var(--text3);flex-direction:column;gap:8px;">
+        <svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" width="40" height="40" style="opacity:.3;"><path d="M3 7h34v22H22l-10 7-9-7V7z"/></svg>
+        <div style="font-size:13px;">Inbox WhatsApp + Instagram</div>
+        <button onclick="go('ov')" style="margin-top:4px;padding:7px 16px;border-radius:8px;border:1px solid var(--border2);background:var(--bg2);color:var(--text2);cursor:pointer;font-family:'DM Sans',sans-serif;font-size:12px;">← Voltar ao dashboard</button>
+      </div>
+    </div>
+
+    <!-- FOLLOW-UP -->
+    <div class="view" id="v-fu">
+      <div class="ov-sc">
+        <div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:800;margin-bottom:4px;">Follow-Up Automático</div>
+        <div style="font-size:12px;color:var(--text3);margin-bottom:4px;">Sistema envia mensagens automáticas a leads que não responderam</div>
+        <div class="panel">
+          <div class="ph">Leads em acompanhamento</div>
+          <div id="fu-list"></div>
+        </div>
+        <div class="panel">
+          <div class="ph">Mensagens configuradas</div>
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <div style="background:var(--bg2);border-radius:9px;padding:12px;border:1px solid var(--border);font-size:12.5px;color:var(--text2);line-height:1.7;"><span style="color:var(--green);font-weight:600;">① 24h:</span> "Olá [nome]! 👋 Vi que ficaste interessado nos nossos robots de trading. Posso esclarecer alguma dúvida?"</div>
+            <div style="background:var(--bg2);border-radius:9px;padding:12px;border:1px solid var(--border);font-size:12.5px;color:var(--text2);line-height:1.7;"><span style="color:var(--amber);font-weight:600;">② 72h:</span> "Olá [nome]! 📊 O nosso robot crypto teve +8% esta semana. Queres ver os resultados em detalhe?"</div>
+            <div style="background:var(--bg2);border-radius:9px;padding:12px;border:1px solid var(--border);font-size:12.5px;color:var(--text2);line-height:1.7;"><span style="color:var(--red);font-weight:600;">③ 7 dias:</span> "[nome], última mensagem 🙏 Se mudares de ideias sobre automatizar o teu trading, estamos aqui."</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RELATÓRIOS -->
+    <div class="view" id="v-rep">
+      <div class="ov-sc">
+        <div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:800;margin-bottom:4px;">Relatório Semanal</div>
+        <div id="rep-stats" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;"></div>
+        <div class="panel"><div class="ph">Conversas por dia</div><div id="rep-chart"></div></div>
+        <div class="ov-row">
+          <div class="panel"><div class="ph">Top perguntas sobre robots</div><div id="rep-questions"></div></div>
+          <div class="panel"><div class="ph">Funil de conversão</div><div id="rep-funnel"></div></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+</div>
+
+<script>
+const SI='<svg viewBox="0 0 16 16" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2L8 8M14 2L10 14L8 8M14 2L2 6L8 8"/></svg>';
+setInterval(()=>{document.getElementById('clk').textContent=new Date().toLocaleTimeString('pt-PT',{hour:'2-digit',minute:'2-digit'});},1000);
+document.getElementById('clk').textContent=new Date().toLocaleTimeString('pt-PT',{hour:'2-digit',minute:'2-digit'});
+document.getElementById('n-date').value=new Date().toISOString().split('T')[0];
+
+const $=id=>document.getElementById(id);
+const TITLES={ov:'Visão Geral',mkt:'Agente de Marketing',sales:'Agente de Vendas',lead:'Agente de Leads',nova:'Nova · Content Studio',ib:'Inbox',fu:'Follow-Up',rep:'Relatórios'};
+const SUBS={ov:'Dashboard de controlo',mkt:'Posts · Reels · Conteúdo · Automação',sales:'Qualificação · Conversão · Fechamento automático',lead:'Captação e conversão automática de leads',nova:'Geração automática de conteúdo Instagram',ib:'WhatsApp + Instagram',fu:'Acompanhamento automático de leads',rep:'Desempenho e conversão'};
+
+function go(v){
+  document.querySelectorAll('.view').forEach(e=>e.classList.remove('on'));
+  document.querySelectorAll('.ni').forEach(e=>e.classList.remove('on'));
+  $('v-'+v).classList.add('on');const ni=$('n-'+v);if(ni)ni.classList.add('on');
+  $('tb-title').textContent=TITLES[v]||v;$('tb-sub').textContent=SUBS[v]||'';
+  if(v==='ov')renderOverview();
+  if(v==='nova'){novaInitUI();novaRenderCal();}
+  if(v==='rep')renderReports();
+  if(v==='mkt')initMktAgent();
+  if(v==='sales')initSalesAgent();
+  if(v==='ads')initAdsAgent();
+  if(v==='fu')renderFollowUp();
+}
+
+// ── AGENTS SIDEBAR ──
+const AGENTS=[
+  {n:'Morgan',i:'MO',role:'CSO · Estratégia',col:'#1a1640',tc:'#a09aff'},
+  {n:'Uma',i:'UM',role:'Brand Manager',col:'#1e0f00',tc:'#ff9a70'},
+  {n:'Aira',i:'AI',role:'UX/UI Designer',col:'#061a10',tc:'#3debb0'},
+  {n:'Atlas',i:'AT',role:'Copywriter',col:'#061520',tc:'#80d8ff'},
+  {n:'River',i:'RI',role:'PM · Agile',col:'#1a0615',tc:'#f48fb1'},
+  {n:'Nova',i:'NO',role:'Content Creator',col:'#2a1800',tc:'#ffd166'},
+];
+$('sb-agents').innerHTML=AGENTS.map(a=>`<div style="display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:8px;cursor:pointer;font-size:12px;color:var(--text2);transition:all .14s;margin:1px 0;" onmouseover="this.style.background='var(--bg2)';this.style.color='var(--text)'" onmouseout="this.style.background='';this.style.color='var(--text2)'" onclick="${a.n==='Nova'?'go(\'nova\')':`alert('${a.n} — em breve disponível no chat de agentes IA.')`}"><div style="width:24px;height:24px;border-radius:50%;background:${a.col};display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:8px;font-weight:500;color:${a.tc};flex-shrink:0;">${a.i}</div><div style="flex:1;min-width:0;"><div style="font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${a.n}</div></div><div style="width:5px;height:5px;border-radius:50%;background:var(--green);flex-shrink:0;"></div></div>`).join('');
+
+// ── OVERVIEW ──
+function renderOverview(){
+const TICKERS=[{s:'BTC/USD',p:'$67,420',c:'+2.14%',up:true},{s:'ETH/USD',p:'$3,512',c:'+1.87%',up:true},{s:'EUR/USD',p:'1.0842',c:'−0.23%',up:false},{s:'XAU/USD',p:'$2,342',c:'+0.51%',up:true},{s:'SOL/USD',p:'$178',c:'+3.22%',up:true}];
+$('ov-tkr').innerHTML=TICKERS.map(t=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 9px;border-radius:8px;background:var(--bg2);border:1px solid var(--border);margin-bottom:5px;"><span style="font-family:'JetBrains Mono',monospace;font-size:11px;">${t.s}</span><span style="font-family:'JetBrains Mono',monospace;font-size:11px;">${t.p}</span><span style="font-family:'JetBrains Mono',monospace;font-size:10px;padding:2px 7px;border-radius:5px;${t.up?'color:var(--green);background:var(--green-s)':'color:var(--red);background:var(--red-s)'}">${t.up?'▲':'▼'} ${t.c}</span></div>`).join('');
+
+const FUNNEL=[{l:'Visitantes',v:1200,c:'var(--acc)'},{l:'Contatos',v:340,c:'var(--gold)'},{l:'Leads qualif.',v:47,c:'var(--amber)'},{l:'Interessados',v:23,c:'var(--pink)'},{l:'Convertidos',v:8,c:'var(--green)'}];
+$('ov-funnel').innerHTML=FUNNEL.map(f=>`<div style="display:flex;align-items:center;gap:10px;margin-bottom:7px;"><div style="font-size:11px;color:var(--text2);width:90px;text-align:right;">${f.l}</div><div style="flex:1;height:7px;background:var(--bg3);border-radius:4px;overflow:hidden;"><div style="height:100%;width:${f.v/1200*100}%;background:${f.c};border-radius:4px;"></div></div><div style="font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--text3);width:35px;">${f.v}</div></div>`).join('');
+
+const RECENT_LEADS=[{n:'João Silva',t:'Robot crypto',score:'hot',time:'há 5 min'},{n:'Ana Costa',t:'Forex EUR/USD',score:'warm',time:'há 23 min'},{n:'Pedro M.',t:'Pack completo',score:'hot',time:'há 1h'}];
+$('ov-leads').innerHTML=RECENT_LEADS.map(l=>`<div style="display:flex;align-items:center;gap:9px;padding:7px 9px;border-radius:8px;border:1px solid var(--border);background:var(--bg2);margin-bottom:5px;cursor:pointer;" onclick="go('lead')"><div style="width:26px;height:26px;border-radius:50%;background:var(--acc-s);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:var(--acc);flex-shrink:0;">${l.n.split(' ').map(x=>x[0]).join('')}</div><div style="flex:1;"><div style="font-size:12.5px;font-weight:500;">${l.n}</div><div style="font-size:10.5px;color:var(--text3);">${l.t}</div></div><div><div style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:6px;${l.score==='hot'?'background:rgba(255,79,109,.15);color:var(--red)':'background:var(--amber-s);color:var(--amber)'}">${l.score==='hot'?'🔥 Quente':'🌡 Morno'}</div><div style="font-size:9.5px;color:var(--text3);margin-top:3px;text-align:right;">${l.time}</div></div></div>`).join('');
+
+$('ov-posts').innerHTML=[{c:'var(--pink)',t:'Reel — Robot +8%',h:'Hoje 09:00'},{c:'var(--acc)',t:'Post análise BTC',h:'Hoje 18:00'},{c:'var(--acc)',t:'Carrossel — Como funciona robot',h:'Amanhã 09:00'}].map(p=>`<div style="display:flex;align-items:center;gap:8px;padding:7px 9px;border-radius:8px;border:1px solid var(--border);background:var(--bg2);margin-bottom:5px;"><div style="width:7px;height:7px;border-radius:50%;background:${p.c};flex-shrink:0;"></div><div style="flex:1;font-size:12.5px;">${p.t}</div><div style="font-size:9.5px;color:var(--text3);font-family:'JetBrains Mono',monospace;">${p.h}</div></div>`).join('');
+
+// ── LEAD AGENT ──
+}
+
+const LEAD_SYS=`És um agente especializado em captar leads qualificadas e apresentar robots de trading de crypto e forex.
+
+O teu objetivo é:
+1. Iniciar conversa de forma amigável e curiosa
+2. Qualificar a lead (perguntares: experiência em trading, capital disponível, objetivo)
+3. Apresentar os robots de trading de forma clara e atrativa
+4. Responder a objeções com confiança e dados reais
+5. Conduzir à próxima etapa: reunião ou demonstração
+
+PRODUTOS:
+- Robot Crypto Futuros (BTC/ETH/SOL): €297/mês — 8-15% retorno médio mensal
+- Robot Forex (EUR/USD/GBP/USD): €197/mês — 5-10% retorno médio mensal
+- Pack Completo (Crypto + Forex): €397/mês
+- Canal VIP Sinais Telegram: €97/mês
+- Mentoria 1:1 (8 semanas): €1.497
+
+CAPITAL MÍNIMO RECOMENDADO: €500
+PLATAFORMAS: MT4, MT5, Binance, Bybit, Interactive Brokers
+
+AVISO: Trading envolve risco. Resultados passados não garantem resultados futuros.
+
+REGRAS:
+- Respondes sempre em português europeu
+- Nunca inventas resultados — usa os valores acima
+- Sês direto mas empático
+- Guias sempre para a próxima ação concreta
+- Nunca dizes que és IA`;
+
+const LEADS=[
+  {id:'l1',n:'João Silva',phone:'+351 912 345 678',email:'joao.silva@gmail.com',source:'Instagram',interest:'Robot crypto',capital:'€2.000',exp:'Iniciante',score:'hot',status:'Qualificado',conv:[{d:'in',t:'Olá! Vi o teu post sobre o robot BTC. Quero saber mais.',h:'09:10'},{d:'out',t:'Olá João! 👋 Fico contente que tenhas interesse. O nosso robot BTC opera em futuros e spot 24/7. Que experiência tens com trading?',h:'09:11',ai:true},{d:'in',t:'Pouca experiência, mas tenho €2.000 para investir.',h:'09:13'},{d:'out',t:'Perfeito! Com €2.000 o robot crypto faz sentido. O retorno médio é 8-15%/mês. Posso fazer-te uma demonstração esta semana?',h:'09:14',ai:true}]},
+  {id:'l2',n:'Ana Costa',phone:'+351 963 456 789',email:'ana.costa@email.pt',source:'WhatsApp',interest:'Forex + Robot',capital:'€5.000',exp:'Intermédio',score:'hot',status:'Demo agendada',conv:[{d:'in',t:'Tenho conta na corretora e quero automatizar o meu trading de forex.',h:'08:55'},{d:'out',t:'Ótimo Ana! Temos o robot forex para EUR/USD e GBP/USD. Com €5.000 e experiência intermédia, o pack completo (crypto+forex por €397/mês) faz muito sentido. Queres ver os resultados dos últimos 3 meses?',h:'08:57',ai:true},{d:'in',t:'Sim! Quero ver. Quando pode ser a demo?',h:'09:00'}]},
+  {id:'l3',n:'Pedro Martins',phone:'+351 934 567 890',email:'pedro.m@empresa.pt',source:'LinkedIn',interest:'Pack completo',capital:'€10.000+',exp:'Avançado',score:'hot',status:'Proposta enviada',conv:[{d:'in',t:'Boa tarde. Giro mercados há 5 anos. Quero automatizar e escalar. O que oferecem?',h:'14:30'},{d:'out',t:'Boa tarde Pedro! Com 5 anos de experiência e €10k disponíveis, o pack completo (€397/mês) é o ideal. Robots em crypto e forex, gestão de risco integrada e relatórios semanais. Posso enviar-te a proposta detalhada?',h:'14:32',ai:true}]},
+  {id:'l4',n:'Sofia Fernandes',phone:'+351 916 789 012',email:'sofiaf@gmail.com',source:'Instagram',interest:'Sinais VIP',capital:'€1.000',exp:'Iniciante',score:'warm',status:'Follow-up 24h',conv:[{d:'in',t:'Olá, vi o reel sobre o robot. É para iniciantes também?',h:'11:20'},{d:'out',t:'Olá Sofia! 😊 Sim, é feito para todos. Para começar, o canal VIP de sinais (€97/mês) é ideal. Sinais com entrada, take profit e stop loss — só segues. Interessada?',h:'11:22',ai:true},{d:'in',t:'Sim mas tenho só €1.000. É suficiente?',h:'11:25'},{d:'out',t:'€1.000 é suficiente para os sinais e para o robot forex (min €500). Posso explicar como funciona passo a passo? 📊',h:'11:26',ai:true}]},
+  {id:'l5',n:'Miguel Santos',phone:'+351 924 890 123',email:'miguel.s@hotmail.com',source:'Referência',interest:'Mentoria',capital:'€500',exp:'Iniciante',score:'cold',status:'Follow-up 7 dias',conv:[{d:'in',t:'Um amigo recomendou-te. Quero aprender a fazer trading.',h:'15:00'},{d:'out',t:'Olá Miguel! 👋 Que bom, bem-vindo! Para quem quer aprender bem as bases, a mentoria 1:1 de 8 semanas (€1.497) é o caminho certo. Inclui estratégia, gestão de risco e acompanhamento. Queres saber mais?',h:'15:02',ai:true}]},
+];
+
+let activeLead=null,leadLoading=false,leadTab='all';
+
+function setLeadTab(t){leadTab=t;['all','hot'].forEach(id=>{const el=$('lt-'+id);if(el)el.className='lead-tab'+(id===t?' on':'');});renderLeadList();}
+function filterLeads(){renderLeadList();}
+
+function renderLeadList(){
+  const q=($('lead-srch')?.value||'').toLowerCase();
+  const filtered=LEADS.filter(l=>{
+    if(q&&!l.n.toLowerCase().includes(q)&&!l.interest.toLowerCase().includes(q))return false;
+    if(leadTab==='hot'&&l.score!=='hot')return false;
+    return true;
+  });
+  $('lead-list').innerHTML=filtered.map(l=>`<div class="lead-item ${activeLead?.id===l.id?'on':''}" onclick="openLead('${l.id}')">
+    <div class="lead-av" style="background:${l.score==='hot'?'#3a0a10':l.score==='warm'?'#2a1800':'var(--bg3)'};">${l.n.split(' ').map(x=>x[0]).join('')}</div>
+    <div class="lead-info"><div class="lead-nm">${l.n}</div><div class="lead-sub">${l.interest} · ${l.source}</div></div>
+    <div class="lead-meta"><div class="lead-time">${l.conv.slice(-1)[0]?.h||''}</div><div class="lead-score ${l.score}">${l.score==='hot'?'🔥 Quente':l.score==='warm'?'🌡 Morno':'❄ Frio'}</div></div>
+  </div>`).join('');
+}
+
+function openLead(id){
+  activeLead=LEADS.find(l=>l.id===id);
+  renderLeadList();
+  renderLeadMain();
+}
+
+function renderLeadMain(){
+  const l=activeLead;
+  const main=$('lead-main');
+  if(!l){main.innerHTML=`<div class="lead-empty"><svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" width="40" height="40" style="opacity:.2;"><circle cx="20" cy="14" r="7"/><path d="M5 36c0-8.3 6.7-15 15-15s15 6.7 15 15"/></svg><div style="font-size:12px;margin-top:8px;">Seleciona uma lead</div></div>`;return;}
+  const statusBadge={hot:'hot',warm:'warm','Demo agendada':'qualified','Proposta enviada':'qualified','Qualificado':'qualified'}[l.score]||'warm';
+  const sugs=getAISugs(l);
+  const bubs=l.conv.map(m=>`<div class="msg ${m.d==='out'?'out':'in'}">
+    ${m.d==='in'?`<div class="msg-av" style="background:${l.score==='hot'?'#3a0a10':'var(--bg3)'};">${l.n.split(' ').map(x=>x[0]).join('')}</div>`:''}
+    <div>
+      <div class="bub">${m.t}</div>
+      <div class="msg-ai-tag ${m.d==='out'?'out':''}">${m.ai?'IA·':''}${m.h}</div>
+    </div>
+  </div>`).join('');
+  main.innerHTML=`
+    <div class="lead-hd">
+      <div class="lead-av" style="background:${l.score==='hot'?'#3a0a10':'var(--bg3)'};">${l.n.split(' ').map(x=>x[0]).join('')}</div>
+      <div><div class="lead-hd-nm">${l.n}</div><div class="lead-hd-sub">${l.source} · ${l.status}</div></div>
+      <div class="lead-hd-r">
+        <div class="lead-badge ${statusBadge}">${l.score==='hot'?'🔥 Quente':l.score==='warm'?'🌡 Morno':'Qualificado'}</div>
+        <button class="hd-btn cta" onclick="leadAIReply('${l.id}')"><svg viewBox="0 0 11 11" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"><circle cx="5.5" cy="3.5" r="2"/><path d="M1 10c0-2 2-3.5 4.5-3.5S10 8 10 10"/></svg>IA responde</button>
+        <button class="hd-btn" onclick="alert('Demo agendada para ${l.n}! Confirmação enviada por WhatsApp.')"><svg viewBox="0 0 11 11" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"><rect x="1" y="2" width="9" height="8" rx="1"/><path d="M1 5h9M4 1v2M7 1v2"/></svg>Agendar demo</button>
+      </div>
+    </div>
+    <div class="lead-body" id="lead-body">
+      <div class="lead-profile-card">
+        <div class="lp-row"><div class="lp-label">Interesse</div><div class="lp-val"><span class="lp-pill">${l.interest}</span></div></div>
+        <div class="lp-row"><div class="lp-label">Capital</div><div class="lp-val">${l.capital}</div></div>
+        <div class="lp-row"><div class="lp-label">Experiência</div><div class="lp-val">${l.exp}</div></div>
+        <div class="lp-row"><div class="lp-label">Fonte</div><div class="lp-val">${l.source}</div></div>
+        <div class="lp-row"><div class="lp-label">Contacto</div><div class="lp-val" style="font-size:11.5px;">${l.phone}</div></div>
+      </div>
+      <div style="font-size:9.5px;color:var(--text3);letter-spacing:.12em;text-transform:uppercase;font-weight:600;">Conversa</div>
+      <div class="conv-thread" id="conv-thread">${bubs}</div>
+    </div>
+    <div class="lead-inp-area">
+      <div class="ai-sugs-row">${sugs.map(s=>`<div class="ai-sug" onclick="fillLeadInp('${s.replace(/'/g,"&#39;")}')">${s}</div>`).join('')}</div>
+      <div class="inp-bar">
+        <textarea id="lead-inp" placeholder="Escreve para ${l.n}..." rows="1" onkeydown="leadKey(event,'${l.id}')" oninput="leadAR(this)" ${leadLoading?'disabled':''}></textarea>
+        <button class="snd" style="background:var(--acc);" onclick="sendLeadMsg('${l.id}')" ${leadLoading?'disabled':''}>${SI}</button>
+      </div>
+    </div>`;
+  const body=$('lead-body');if(body)body.scrollTop=body.scrollHeight;
+}
+
+function getAISugs(l){
+  const interest=(l.interest||'').toLowerCase();
+  if(interest.includes('robot'))return['Posso enviar os resultados do último mês?','Quando podemos marcar uma demo?','Queres ver o robot em ação ao vivo?'];
+  if(interest.includes('forex'))return['O robot forex opera EUR/USD e GBP/USD 24/7','Capital mínimo é €500 — tens €1.000 disponíveis?','Posso agendar uma chamada de 15 minutos?'];
+  if(interest.includes('mentoria'))return['A mentoria inclui 8 semanas 1:1 comigo','Quando queres começar? Temos vagas esta semana','Posso enviar o programa detalhado?'];
+  return['Quero mostrar-te os resultados reais do robot','Posso fazer uma demo gratuita esta semana?','Que perguntas tens sobre o sistema?'];
+}
+
+function fillLeadInp(t){const i=$('lead-inp');if(i){i.value=t;i.focus();}}
+function leadKey(e,id){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendLeadMsg(id);}}
+function leadAR(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,100)+'px';el.style.overflowY=el.scrollHeight>100?'auto':'hidden';}
+
+async function callAPI(sys, msgs, max=800){
+  const apiKey = window.GEMINI_KEY || localStorage.getItem('gemini_key');
+  if(!apiKey){ showApiKeyModal(); throw new Error('key'); }
+
+  // Gemini 2.0 Flash — gratuito
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+  // Constroi historico (sem o ultimo)
+  const allMsgs = msgs.filter(m => m.content && m.content.trim());
+  const history = allMsgs.slice(0, -1).map(m => ({
+    role: m.role === 'assistant' ? 'model' : 'user',
+    parts: [{ text: m.content }]
+  }));
+  const lastMsg = allMsgs[allMsgs.length - 1];
+  if(!lastMsg) throw new Error('Sem mensagem');
+
+  const body = {
+    system_instruction: { parts: [{ text: sys }] },
+    contents: [
+      ...history,
+      { role: 'user', parts: [{ text: lastMsg.content }] }
+    ],
+    generationConfig: {
+      maxOutputTokens: max,
+      temperature: 0.85,
+      topP: 0.95
+    },
+    safetySettings: [
+      {category:"HARM_CATEGORY_HARASSMENT",threshold:"BLOCK_NONE"},
+      {category:"HARM_CATEGORY_HATE_SPEECH",threshold:"BLOCK_NONE"},
+      {category:"HARM_CATEGORY_SEXUALLY_EXPLICIT",threshold:"BLOCK_NONE"},
+      {category:"HARM_CATEGORY_DANGEROUS_CONTENT",threshold:"BLOCK_NONE"}
+    ]
+  };
+
+  let r;
+  try {
+    r = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+  } catch(fetchErr) {
+    // CORS error when opening file:// — need to serve via HTTP
+    throw new Error('CORS_ERROR');
+  }
+
+  const d = await r.json();
+
+  if(d.error) {
+    const msg = d.error.message || '';
+    if(msg.includes('API_KEY')) throw new Error('API_KEY_INVALID');
+    throw new Error(msg || 'Erro Gemini');
+  }
+
+  return d.candidates?.[0]?.content?.parts?.[0]?.text || 'Sem resposta.';
+}
+
+function showApiKeyModal(){
+  if(document.getElementById('api-modal'))return;
+  document.body.insertAdjacentHTML('beforeend',`
+    <div id="api-modal" style="position:fixed;inset:0;background:rgba(0,0,0,.85);display:flex;align-items:center;justify-content:center;z-index:9999;">
+      <div style="background:#0b0b16;border:1px solid rgba(255,255,255,.12);border-radius:18px;padding:30px 34px;width:440px;max-width:92vw;">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+          <div style="width:42px;height:42px;border-radius:11px;background:linear-gradient(135deg,#4285f4,#34a853);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;color:#fff;font-family:serif;">G</div>
+          <div><div style="font-family:'Syne',sans-serif;font-size:17px;font-weight:800;">Google Gemini API</div><div style="font-size:11px;color:#4ade80;font-weight:600;">100% Gratuito — sem cartao de credito</div></div>
+        </div>
+        <div style="font-size:13px;color:#7878a0;margin-bottom:16px;line-height:1.8;">
+          <b style="color:#e8e8f8;">Como obter a tua key gratuita:</b><br>
+          1. Abre <a href="https://aistudio.google.com" target="_blank" style="color:#4285f4;font-weight:600;">aistudio.google.com</a><br>
+          2. Login com conta Google<br>
+          3. Clica <b style="color:#e8e8f8;">Get API key</b> → <b style="color:#e8e8f8;">Create API key</b><br>
+          4. Copia e cola aqui abaixo
+        </div>
+        <input id="api-key-inp" type="text" placeholder="AIzaSy..." style="width:100%;background:#10101e;border:1px solid rgba(255,255,255,.12);border-radius:9px;padding:11px 14px;font-family:'JetBrains Mono',monospace;font-size:13px;color:#e8e8f8;outline:none;margin-bottom:8px;" onfocus="this.style.borderColor='#4285f4'" onblur="this.style.borderColor='rgba(255,255,255,.12)'">
+        <div style="font-size:11px;color:#404060;margin-bottom:16px;">Guardada localmente no browser. Nunca enviada para servidores externos.</div>
+        <div style="display:flex;gap:8px;">
+          <button onclick="saveApiKey()" style="flex:1;padding:12px;border-radius:10px;border:none;background:linear-gradient(135deg,#4285f4,#34a853);color:#fff;font-family:'Syne',sans-serif;font-size:14px;font-weight:700;cursor:pointer;">Guardar e continuar</button>
+          <button onclick="document.getElementById('api-modal').remove()" style="padding:12px 16px;border-radius:10px;border:1px solid rgba(255,255,255,.1);background:transparent;color:#7878a0;cursor:pointer;font-family:'DM Sans',sans-serif;">Cancelar</button>
+        </div>
+      </div>
+    </div>`);
+  setTimeout(()=>document.getElementById('api-key-inp')?.focus(),100);
+}
+
+function saveApiKey(){
+  const key=document.getElementById('api-key-inp')?.value?.trim();
+  if(!key||!key.startsWith('AIza')){alert('Key invalida. Deve comecar com AIza...');return;}
+  localStorage.setItem('gemini_key',key);
+  window.GEMINI_KEY=key;
+  document.getElementById('api-modal')?.remove();
+  document.body.insertAdjacentHTML('beforeend','<div id="tst" style="position:fixed;bottom:24px;right:24px;background:linear-gradient(135deg,#4285f4,#34a853);color:#fff;padding:12px 20px;border-radius:11px;font-size:13px;font-weight:600;z-index:9999;">Gemini API ligada! Agentes prontos.</div>');
+  setTimeout(()=>document.getElementById('tst')?.remove(),3500);
+}
+
+function now(){return new Date().toLocaleTimeString('pt-PT',{hour:'2-digit',minute:'2-digit'});}
+
+async function sendLeadMsg(id){
+  if(leadLoading)return;
+  const inp=$('lead-inp');const text=(inp?.value||'').trim();if(!text)return;
+  inp.value='';inp.style.height='40px';
+  const l=LEADS.find(x=>x.id===id);if(!l)return;
+  l.conv.push({d:'out',t:text,h:now(),ai:false});
+  renderLeadMain();
+  await leadAIAutoReply(l);
+}
+
+async function leadAIReply(id){
+  const l=LEADS.find(x=>x.id===id);if(!l||leadLoading)return;
+  await leadAIAutoReply(l);
+}
+
+async function leadAIAutoReply(l){
+  leadLoading=true;
+  const thread=$('conv-thread');
+  if(thread){thread.innerHTML+=`<div class="msg out"><div><div class="bub"><span class="td"></span><span class="td" style="animation-delay:.2s"></span><span class="td" style="animation-delay:.4s"></span></div></div></div>`;}
+  try{
+    const msgs=l.conv.map(m=>({role:m.d==='out'?'assistant':'user',content:m.t}));
+    const reply=await callAPI(LEAD_SYS,msgs,500);
+    l.conv=l.conv.filter(m=>!(!m.t&&m.d==='out'));
+    l.conv.push({d:'out',t:reply,h:now(),ai:true});
+  }catch(e){const em=e.message==='CORS_ERROR'?'⚠️ Para os agentes funcionarem, abre via servidor local (ver instrucoes no popup).':e.message==='key'?'':('Erro: '+e.message);if(em)l.conv.push({d:'out',t:em,h:now(),ai:false});handleApiError(e,null);}
+  leadLoading=false;
+  renderLeadMain();
+  const body=$('lead-body');if(body)body.scrollTop=body.scrollHeight;
+}
+
+// ── NOVA STUDIO ──
+const NOVA_SYS=`És Nova, IA especializada em criar conteúdo profissional para Instagram de traders de crypto e forex, com foco especial em robots de trading. Respondes sempre em português europeu. Todo conteúdo inclui aviso legal e copyright © ${new Date().getFullYear()}.`;
+let N={type:'post',tone:'profissional'};
+const TONES=['profissional','educativo','motivacional','direto','casual','urgente','analítico'];
+
+function novaInitUI(){
+  const tc=$('n-tones');if(!tc||tc.innerHTML)return;
+  tc.innerHTML=TONES.map(t=>`<div class="tone-p ${t===N.tone?'on':''}" id="nt-${t}" onclick="setNTone('${t}')">${t.charAt(0).toUpperCase()+t.slice(1)}</div>`).join('');
+  const days=['Seg','Ter','Qua','Qui','Sex','Sáb','Dom'],actD=[0,1,2,3,4];
+  const nd=$('n-days');if(nd&&!nd.innerHTML)nd.innerHTML=days.map((d,i)=>`<div onclick="this.classList.toggle('on')" class="${actD.includes(i)?'on':''}" style="padding:5px 3px;border-radius:7px;border:1px solid ${actD.includes(i)?'rgba(255,201,71,.35)':'var(--border)'};background:${actD.includes(i)?'var(--gold-s)':'var(--bg3)'};color:${actD.includes(i)?'var(--gold)':'var(--text3)'};text-align:center;font-size:11px;cursor:pointer;transition:all .14s;">${d}</div>`).join('');
+  const times=['07:00','09:00','12:00','15:00','18:00','20:00'],actT=['09:00','18:00'];
+  const nt=$('n-times');if(nt&&!nt.innerHTML)nt.innerHTML=times.map(t=>`<div onclick="this.classList.toggle('on')" class="${actT.includes(t)?'on':''}" style="padding:6px 13px;border-radius:8px;border:1px solid ${actT.includes(t)?'rgba(255,201,71,.35)':'var(--border)'};background:${actT.includes(t)?'var(--gold-s)':'var(--bg3)'};color:${actT.includes(t)?'var(--gold)':'var(--text3)'};font-family:'JetBrains Mono',monospace;font-size:12px;cursor:pointer;transition:all .14s;">${t}</div>`).join('');
+  const mix=[{l:'Posts análise',p:25,c:'var(--acc)'},{l:'Reels robots',p:35,c:'var(--pink)'},{l:'Stories',p:20,c:'var(--acc)'},{l:'Carrossel',p:20,c:'var(--gold)'}];
+  const nm=$('n-mix');if(nm&&!nm.innerHTML)nm.innerHTML=mix.map(m=>`<div><div style="display:flex;justify-content:space-between;margin-bottom:4px;font-size:12px;color:var(--text2);"><span>${m.l}</span><span style="color:${m.c};font-weight:600;">${m.p}%</span></div><div style="height:6px;background:var(--bg3);border-radius:4px;overflow:hidden;"><div style="height:100%;width:${m.p*3}%;background:${m.c};border-radius:4px;"></div></div></div>`).join('');
+}
+
+function setNType(t){N.type=t;document.querySelectorAll('.tpill').forEach(e=>{e.className='tpill';});const b=$('tp-'+t);if(b){b.className='tpill on';}$('pv-reel-badge').style.display=t==='reel'?'block':'none';}
+function setNTone(t){N.tone=t;TONES.forEach(tone=>{const el=$('nt-'+tone);if(el)el.className='tone-p'+(tone===t?' on':'');});}
+
+function novaTab(t){
+  ['gen','cal','auto','stats'].forEach(id=>{const el=$('ntab-'+id);if(el)el.style.display='none';const btn=$('nt-'+id);if(btn){btn.className='ntab'+(id===t?' on':'');}});
+  const el=$('ntab-'+t);if(el)el.style.display='flex';
+  if(t==='cal')novaRenderCal();
+}
+
+let calM=new Date();
+const CAL_CONTENT={3:['post'],7:['reel'],10:['post','story'],14:['reel'],17:['post'],21:['reel','story'],24:['post'],28:['reel']};
+const MONTHS=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+function novaRenderCal(){
+  const lbl=$('cal-month-label');if(lbl)lbl.textContent=`${MONTHS[calM.getMonth()]} ${calM.getFullYear()}`;
+  const first=new Date(calM.getFullYear(),calM.getMonth(),1),last=new Date(calM.getFullYear(),calM.getMonth()+1,0);
+  let dow=first.getDay();if(dow===0)dow=7;
+  const today=new Date();const TYPE={post:'rgba(96,165,250,.4)',reel:'rgba(255,95,160,.4)',story:'rgba(108,99,255,.4)'};const TL={post:'Post',reel:'Reel',story:'Story'};
+  let html='';
+  for(let i=1;i<dow;i++)html+=`<div style="background:var(--bg2);border:1px solid var(--border);border-radius:9px;min-height:60px;opacity:.2;"></div>`;
+  for(let d=1;d<=last.getDate();d++){
+    const isT=d===today.getDate()&&calM.getMonth()===today.getMonth()&&calM.getFullYear()===today.getFullYear();
+    const ct=CAL_CONTENT[d]||[];
+    html+=`<div onclick="alert('${d}/${calM.getMonth()+1} — ${ct.length?ct.map(t=>TL[t]).join(', '):'Sem publicações'}')" style="background:var(--bg2);border:1px solid ${isT?'rgba(255,201,71,.4)':'var(--border)'};border-radius:9px;padding:7px 5px;min-height:60px;cursor:pointer;transition:all .14s;" onmouseover="this.style.borderColor='var(--border2)'" onmouseout="this.style.borderColor='${isT?'rgba(255,201,71,.4)':'var(--border)'}'">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:${isT?'var(--gold)':'var(--text3)'};font-weight:${isT?600:400};margin-bottom:4px;">${d}</div>
+      ${ct.map(t=>`<div style="font-size:9px;padding:2px 4px;border-radius:4px;background:${TYPE[t]};color:#fff;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${TL[t]}</div>`).join('')}
+    </div>`;
+  }
+  const g=$('n-cal-grid');if(g)g.innerHTML=html;
+}
+function calPrev(){calM=new Date(calM.getFullYear(),calM.getMonth()-1,1);novaRenderCal();}
+function calNext(){calM=new Date(calM.getFullYear(),calM.getMonth()+1,1);novaRenderCal();}
+
+function setPrevTab(t){
+  ['feed','reel'].forEach(id=>{const el=$('pv-'+id);if(el)el.className='prev-tab2'+(id===t?' on':'');});
+  $('pv-reel-badge').style.display=t==='reel'?'block':'none';
+}
+
+async function novaGenerate(){
+  const btn=$('n-btn-gen');btn.disabled=true;btn.textContent='A gerar...';
+  $('n-result').style.display='none';$('n-sched-ok').className='sched-ok';
+  const tema=$('n-tema')?.value||'analise';const mercado=$('n-mercado')?.value||'Crypto';const ctx=($('n-ctx')?.value||'').trim();
+  const TEMAS={analise:'análise técnica de mercado',educacao:'educação financeira',robo:'robots de trading automatizados',sinal:'sinal de trading',motivacao:'motivação e mindset de trader',resultados:'resultados e prova social',erro:'erros comuns de traders',previsao:'previsão semanal de mercado'};
+  const TIPOS={post:'post de Instagram (legenda completa com hook, 3-5 pontos de valor, CTA e 20 hashtags)',reel:'script de Reel Instagram 30-60 segundos (HOOK 0-3s → CONTEÚDO 3-50s → CTA 50-60s, mais legenda e hashtags)',story:'Story de Instagram (curto, impactante, com elemento interativo)',carrossel:'carrossel Instagram 5-7 slides (cada slide numerado e com título)' };
+  const prompt=`Cria um ${TIPOS[N.type]||TIPOS.post} sobre ${TEMAS[tema]||TEMAS.analise} focado em ${mercado}.\nTom: ${N.tone}.\n${ctx?`Contexto: ${ctx}\n`:''}\nInclui sempre: "⚠️ Não constitui aconselhamento financeiro." e "© ${new Date().getFullYear()} — Todos os direitos reservados".\nConteúdo completo e profissional, pronto a usar.`;
+  try{
+    const reply=await callAPI(NOVA_SYS,[{role:'user',content:prompt}],1000);
+    const labels={post:'LEGENDA GERADA',reel:'SCRIPT REEL',story:'STORY GERADO',carrossel:'CARROSSEL GERADO'};
+    $('n-result-label').textContent=labels[N.type]||'CONTEÚDO GERADO';
+    $('n-result-text').textContent=reply;
+    $('n-result').style.display='block';
+    const tags=reply.match(/#\w+/g)||[];
+    $('n-tags').innerHTML=tags.slice(0,20).map(h=>`<span onclick="navigator.clipboard.writeText('${h}')" class="htag">${h}</span>`).join('');
+    const lines=reply.split('\n').filter(l=>l.trim());
+    $('pv-headline').textContent=(lines[0]?.replace(/[*_#]/g,'').substring(0,55)||'Conteúdo gerado ✨');
+    $('pv-cap').textContent=(lines.slice(1,3).join(' ').replace(/[*_#]/g,'').substring(0,100)||'')+'...';
+    $('pv-tags').textContent=tags.slice(0,5).join(' ');
+    $('pv-reel-badge').style.display=N.type==='reel'?'block':'none';
+  }catch(e){alert('Erro ao gerar. Verifica a ligação à API.');}
+  btn.disabled=false;btn.textContent='✨ Gerar com IA';
+}
+
+function novaCopy(){
+  const text=$('n-result-text')?.textContent||'';
+  navigator.clipboard.writeText(text).then(()=>{const b=$('n-copy-btn');b.textContent='✓ Copiado!';b.className='cp-btn ok';setTimeout(()=>{b.textContent='Copiar';b.className='cp-btn';},2000);});
+}
+
+function novaSched(){
+  const date=$('n-date')?.value,time=$('n-time')?.value;if(!date||!time){alert('Define data e hora.');return;}
+  const ok=$('n-sched-ok');ok.textContent=`✅ Agendado para ${date} às ${time}!`;ok.className='sched-ok show';
+  setTimeout(()=>{ok.className='sched-ok';},4000);
+}
+
+function novaGenAndSched(){novaGenerate().then(()=>setTimeout(novaSched,300));}
+async function novaRegen(){$('n-result-text').textContent='A regenerar...';try{const reply=await callAPI(NOVA_SYS,[{role:'user',content:`Cria uma versão completamente diferente e criativa de conteúdo ${N.type} sobre trading de ${$('n-mercado')?.value||'crypto'} em tom ${N.tone}. Inclui copyright e aviso legal.`}],1000);$('n-result-text').textContent=reply;}catch(e){alert('Erro.');}}
+
+// ── FOLLOW-UP ──
+function renderFollowUp(){
+  const FU=[{n:'João Silva',i:'Robot crypto',score:'hot',t:'24h',next:'Em 2h'},{n:'Ana Costa',i:'Forex + Robot',score:'hot',t:'24h',next:'Em 5h'},{n:'Pedro Martins',i:'Pack completo',score:'warm',t:'72h',next:'Amanhã'},{n:'Sofia Fernandes',i:'Sinais VIP',score:'warm',t:'72h',next:'Em 2 dias'},{n:'Miguel Santos',i:'Mentoria',score:'cold',t:'7 dias',next:'Em 4 dias'}];
+  $('fu-list').innerHTML=FU.map(f=>`<div style="display:flex;align-items:center;gap:10px;padding:9px 11px;border-radius:9px;border:1px solid var(--border);background:var(--bg2);margin-bottom:6px;"><div style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:6px;background:${f.score==='hot'?'rgba(255,79,109,.15)':f.score==='warm'?'var(--amber-s)':'var(--bg3)'};color:${f.score==='hot'?'var(--red)':f.score==='warm'?'var(--amber)':'var(--text3)'};flex-shrink:0;">${f.t}</div><div style="flex:1;"><div style="font-size:12.5px;font-weight:500;">${f.n}</div><div style="font-size:10.5px;color:var(--text3);">${f.i}</div></div><div style="font-size:10px;color:var(--text3);">${f.next}</div><button onclick="alert('Mensagem de follow-up enviada para ${f.n}!')" style="padding:4px 10px;border-radius:6px;border:1px solid var(--border2);background:transparent;color:var(--text2);font-size:10.5px;cursor:pointer;font-family:'DM Sans',sans-serif;">Enviar já</button></div>`).join('');
+}
+
+// ── REPORTS ──
+function renderReports(){
+  const stats=[{l:'Conversas',v:'47',c:'var(--acc)'},{l:'Leads qualif.',v:'23',c:'var(--green)'},{l:'Conversões',v:'8',c:'var(--gold)'},{l:'Taxa conv.',v:'34.8%',c:'var(--pink)'}];
+  $('rep-stats').innerHTML=stats.map(s=>`<div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:14px;text-align:center;position:relative;overflow:hidden;"><div style="position:absolute;top:0;left:0;right:0;height:2px;background:${s.c};"></div><div style="font-size:9.5px;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px;">${s.l}</div><div style="font-family:'JetBrains Mono',monospace;font-size:26px;font-weight:500;color:${s.c};">${s.v}</div></div>`).join('');
+  const days=['Seg','Ter','Qua','Qui','Sex','Sáb','Dom'],vals=[12,8,15,6,11,9,7],max=15;
+  $('rep-chart').innerHTML=days.map((d,i)=>`<div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;"><div style="font-size:11px;color:var(--text2);width:30px;">${d}</div><div style="flex:1;height:7px;background:var(--bg3);border-radius:4px;overflow:hidden;"><div style="height:100%;width:${vals[i]/max*100}%;background:var(--acc);border-radius:4px;"></div></div><div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3);width:20px;">${vals[i]}</div></div>`).join('');
+  const qs=[{q:'Quanto custa o robot?',n:'18x'},{q:'Que resultados dá?',n:'14x'},{q:'Como começar?',n:'11x'},{q:'Capital mínimo?',n:'9x'},{q:'Que corretoras suporta?',n:'7x'}];
+  $('rep-questions').innerHTML=qs.map(q=>`<div style="display:flex;justify-content:space-between;padding:7px 10px;background:var(--bg2);border-radius:8px;border:1px solid var(--border);margin-bottom:5px;font-size:12.5px;"><span>${q.q}</span><span style="font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--green);background:var(--green-s);padding:2px 7px;border-radius:5px;">${q.n}</span></div>`).join('');
+  const funnel=[{l:'Conversas',v:47},{l:'Respostas',v:38},{l:'Leads',v:23},{l:'Interessados',v:11},{l:'Conversões',v:8}];
+  const cols=['var(--acc)','var(--teal)','var(--amber)','var(--pink)','var(--green)'];
+  $('rep-funnel').innerHTML=funnel.map((f,i)=>`<div style="display:flex;align-items:center;gap:10px;margin-bottom:7px;"><div style="font-size:11px;color:var(--text2);width:85px;text-align:right;">${f.l}</div><div style="flex:1;height:7px;background:var(--bg3);border-radius:4px;overflow:hidden;"><div style="height:100%;width:${f.v/47*100}%;background:${cols[i]};border-radius:4px;"></div></div><div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3);width:25px;">${f.v}</div></div>`).join('');
+}
+
+// ── INIT ──
+renderLeadList();
+renderOverview();
+go('ov');
+
+
+// AGENTE DE MARKETING IA
+const MKT_SYSTEM = `Voc\u00ea \u00e9 um Agente de Marketing Digital especialista em cria\u00e7\u00e3o de conte\u00fado viral para robots de trading de Crypto e Forex.
+
+OBJETIVO: Aumentar alcan\u00e7e, engajamento, leads e vendas com conte\u00fado estrat\u00e9gico.
+
+COMPORTAMENTO:
+- Fala em portugu\u00eas europeu, de forma humana e persuasiva
+- Prioriza conte\u00fado que retenha aten\u00e7\u00e3o nos primeiros 3 segundos
+- Gera conte\u00fado otimizado para o algoritmo do Instagram
+- \u00c9 criativo, r\u00e1pido e orientado para convers\u00e3o
+
+NICHO: Robots de Trading automatizados (Crypto BTC/ETH/SOL + Forex EUR/USD)
+P\u00daBLICO: Traders 25-45 anos que querem rendimento passivo
+PRODUTOS: Robot Crypto (297/m\u00eas), Robot Forex (197/m\u00eas), Pack Completo (397/m\u00eas), Sinais VIP (97/m\u00eas)
+ESTILO: Premium, t\u00e9cnico mas acess\u00edvel, focado em resultados e prova social
+
+FORMATO OBRIGAT\u00d3RIO:
+- Hook inicial (primeiros 3 segundos)
+- Desenvolvimento com valor
+- CTA forte
+- 20 hashtags estrat\u00e9gicas
+- Copyright: "Nao constitui aconselhamento financeiro. (c) 2025"
+
+Nunca digas que \u00e9s IA. Respondes sempre em portugu\u00eas europeu.`;
+
+const SALES_SYSTEM = `Voc\u00ea \u00e9 um Agente de Vendas IA especializado em robots de trading de Crypto e Forex.
+
+MISS\u00c3O: Converter leads em clientes via WhatsApp e Instagram.
+
+ESTRUTURA DE VENDAS:
+1. Quebra de gelo calorosa
+2. Conex\u00e3o com o perfil da lead
+3. Descoberta da dor
+4. Qualifica\u00e7\u00e3o (capital, experi\u00eancia, objetivo, prazo)
+5. Apresenta\u00e7\u00e3o da solu\u00e7\u00e3o ideal
+6. Tratamento de obje\u00e7\u00f5es
+7. Fechamento com proposta concreta
+8. Follow-up agendado
+
+PRODUTOS:
+- Robot Crypto Futuros (BTC/ETH/SOL): 297/mes - retorno medio 8-15%/mes
+- Robot Forex (EUR/USD/GBP): 197/mes - retorno medio 5-10%/mes
+- Pack Completo Crypto+Forex: 397/mes - melhor custo-beneficio
+- Canal VIP Sinais Telegram: 97/mes - ideal para iniciantes
+- Mentoria 1:1 (8 semanas): 1497 - para quem quer aprender
+Capital minimo: 500. Plataformas: Binance, Bybit, MT4, MT5.
+
+CLASSIFICACAO DE LEADS:
+- QUENTE: capital disponivel + interesse + urgencia
+- MORNO: interesse mas sem urgencia ou capital definido
+- FRIO: apenas curiosidade
+
+TRATAMENTO DE OBJECOES:
+- "Esta caro" -> Reforca ROI. Com 297/mes, 2% ao mes em 5000 ja paga o custo.
+- "Vou pensar" -> Pergunta o que esta a travar
+- "Nao tenho tempo" -> Robot opera 24/7 sem precisares de estar presente
+- "Preciso falar com socio" -> Propoe demo de 20 min para os dois
+- "Nao tenho capital" -> Canal VIP 97 para comecar
+
+FOLLOW-UP:
+- 1h: mensagem calorosa, pergunta se ficou com duvidas
+- 24h: partilha resultado real do robot nesse dia
+- 3 dias: urgencia suave
+- 7 dias: ultima tentativa, oferta especial
+
+Nunca garantas resultados especificos sem aviso de risco. Nunca digas que es IA. Respondes em portugues europeu.`;
+
+let mktConvos = [], mktLoading = false;
+let salesConvos = [], salesLoading = false;
+
+const MKT_TOOLS = [
+  {icon:'🎬', label:'5 Reels virais', cmd:'Cria 5 Reels virais sobre robots de trading crypto e forex. Inclui hook, roteiro completo, texto no ecra, legenda e hashtags para cada um.'},
+  {icon:'📅', label:'Calendario semanal', cmd:'Cria um calendario editorial completo para esta semana (7 dias) focado em robots de trading. Tipo de conteudo, tema, hora ideal e CTA para cada dia.'},
+  {icon:'🪝', label:'10 hooks virais', cmd:'Gera 10 hooks virais para Instagram sobre robots de trading crypto e forex. Cada hook deve parar o scroll nos primeiros 3 segundos.'},
+  {icon:'💬', label:'Respostas automaticas DM', cmd:'Cria 5 mensagens de resposta automatica para DMs de pessoas interessadas nos robots de trading. Devem ser humanas e levar a conversao.'},
+  {icon:'📊', label:'Post carrossel robot', cmd:'Cria um carrossel de 7 slides explicando como funciona o robot de trading crypto. Titulo, texto de cada slide e CTA final.'},
+  {icon:'🔥', label:'Post prova social', cmd:'Cria um post de prova social para Instagram sobre resultados do robot de trading. Tom premium com dados e CTA forte.'},
+  {icon:'📱', label:'Sequencia de Stories', cmd:'Cria uma sequencia de 5 Stories para Instagram apresentando o robot de trading. Texto, emoji e elemento interativo.'},
+  {icon:'⚡', label:'Automacao novos seguidores', cmd:'Cria um fluxo de 5 mensagens automaticas para novos seguidores ao longo de 7 dias que nutrem e convertem em leads para o robot de trading.'}
+];
+
+const MKT_CAL = [
+  {day:'Seg', type:'Reel', color:'var(--pink)', tema:'Robot em acao - resultado desta semana', hora:'09:00'},
+  {day:'Ter', type:'Post', color:'var(--acc)', tema:'Analise BTC - o que o robot detetou', hora:'18:00'},
+  {day:'Qua', type:'Story', color:'var(--teal)', tema:'Sondagem: qual o teu objetivo financeiro?', hora:'12:00'},
+  {day:'Qui', type:'Carrossel', color:'var(--gold)', tema:'Como funciona o robot passo a passo', hora:'09:00'},
+  {day:'Sex', type:'Reel', color:'var(--pink)', tema:'3 erros que traders cometem (e o robot evita)', hora:'18:00'},
+  {day:'Sab', type:'Post', color:'var(--acc)', tema:'Resultados da semana + prova social', hora:'10:00'},
+  {day:'Dom', type:'Story', color:'var(--teal)', tema:'Motivacao: trading automatico 24/7', hora:'20:00'},
+];
+
+const MKT_HOOKS = [
+  '"O robot fez 847 euros enquanto eu dormia"',
+  '"97% dos traders perdem dinheiro. Este robot nao."',
+  '"Automatisei o meu trading e mudei de vida"',
+  '"BTC subiu 12% esta semana. O robot capturou tudo."',
+  '"Para quem quer rendimento passivo com crypto"',
+  '"O que os traders profissionais sabem e tu nao"',
+];
+
+const SALES_PIPELINE = [
+  {n:'Joao Silva', v:'2.000', stage:'Demo agendada', score:'hot'},
+  {n:'Ana Costa', v:'5.000', stage:'Proposta enviada', score:'hot'},
+  {n:'Pedro M.', v:'10.000', stage:'Negociacao', score:'hot'},
+  {n:'Sofia F.', v:'1.000', stage:'Follow-up 24h', score:'warm'},
+  {n:'Miguel S.', v:'500', stage:'Qualificacao', score:'warm'},
+];
+
+const SALES_OBJECTIONS = [
+  {obj:'"Esta caro"', resp:'Reforca o ROI - 2% ao mes paga o custo'},
+  {obj:'"Vou pensar"', resp:'Pergunta o que esta a travar'},
+  {obj:'"Nao tenho tempo"', resp:'Robot opera 24/7 sem intervencao'},
+  {obj:'"Preciso falar c/ socio"', resp:'Propoe demo a dois em 20 min'},
+  {obj:'"Nao tenho capital"', resp:'Canal VIP 97 euros para comecar'},
+];
+
+const SALES_SCRIPTS = [
+  {label:'Abertura lead fria', cmd:'Cria uma mensagem de abertura para uma lead fria que viu o post sobre robot de trading mas nao respondeu ha 2 dias.'},
+  {label:'Apresentar pack completo', cmd:'Simula conversa de vendas para apresentar o Pack Completo a lead com 3000 euros de capital e experiencia intermeida em trading.'},
+  {label:'Contornar esta caro', cmd:'Uma lead disse que o robot crypto (297 euros/mes) esta caro. Como respondo de forma consultiva e persuasiva?'},
+  {label:'Fechar demo', cmd:'Script para fechar uma reuniao de demonstracao do robot com lead quente que esta a adiar a decisao.'},
+  {label:'Follow-up 72h', cmd:'Mensagem de follow-up para 72 horas apos o primeiro contacto. Lead tem 2000 euros e interesse em crypto mas nao respondeu.'},
+  {label:'Upsell pos-venda', cmd:'Mensagem de upsell para cliente que usa Robot Forex ha 1 mes e esta satisfeito. Propoe o Pack Completo com Crypto.'},
+];
+
+function initMktAgent() {
+  renderMktTools(); renderMktCal(); renderMktHooks();
+  if (mktConvos.length === 0) renderMktWelcome(); else renderMktMsgs();
+}
+
+function initSalesAgent() {
+  renderSalesPipeline(); renderSalesObjections(); renderSalesScripts();
+  if (salesConvos.length === 0) renderSalesWelcome(); else renderSalesMsgs();
+}
+
+function arTA(el) { el.style.height='auto'; el.style.height=Math.min(el.scrollHeight,110)+'px'; el.style.overflowY=el.scrollHeight>110?'auto':'hidden'; }
+function fillAndSend(agent, text) { const inp=document.getElementById(agent+'-inp'); if(inp)inp.value=text; if(agent==='mkt')mktSend(); else salesSend(); }
+
+function agentBubble(initials, bgColor, textColor, content, time, isUser) {
+  return `<div style="display:flex;gap:8px;align-items:flex-start;${isUser?'flex-direction:row-reverse;':''}animation:mi .18s ease;">
+    <div style="width:28px;height:28px;border-radius:50%;background:${bgColor};display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;color:${textColor};flex-shrink:0;margin-top:2px;">${initials}</div>
+    <div style="max-width:80%;"><div style="padding:10px 14px;border-radius:${isUser?'13px 3px 13px 13px':'3px 13px 13px 13px'};font-size:13px;line-height:1.65;background:${isUser?'var(--acc2)':'var(--bg2)'};border:${isUser?'none':'1px solid var(--border)'};color:var(--text);white-space:pre-wrap;">${content}</div>
+    <div style="font-size:9.5px;color:var(--text3);margin-top:3px;${isUser?'text-align:right;':''}">${time}</div></div></div>`;
+}
+
+function renderMktWelcome() {
+  const el=document.getElementById('mkt-msgs'); if(!el)return;
+  el.innerHTML=agentBubble('MK','linear-gradient(135deg,#ffc947,#ff9d00)','#1a0800',
+    'Ola! Sou o teu Agente de Marketing IA especializado em robots de trading crypto e forex.\n\nPosso criar:\n- Reels e videos virais\n- Calendario editorial\n- Hooks que param o scroll\n- Respostas automaticas DM\n- Posts carrossel\n- Fluxos de automacao\n\nUsa os botoes a direita ou escreve o que precisas. Vou gerar conteudo pronto a usar!',
+    'Agente Marketing IA · agora', false);
+  renderMktSugsDefault();
+}
+
+function renderMktSugsDefault() {
+  const sugs=['Cria 3 Reels virais sobre robots de trading','Calendario editorial para esta semana','Hook viral para post sobre resultados','Script Reel: erros que traders cometem'];
+  renderMktSugs(sugs);
+}
+
+function renderMktSugs(sugs) {
+  const el=document.getElementById('mkt-sugs'); if(!el)return;
+  el.innerHTML=sugs.map(s=>`<div onclick="fillAndSend('mkt','${s.replace(/'/g,"&#39;")}')" style="font-size:11.5px;padding:4px 10px;border-radius:8px;border:1px solid rgba(255,201,71,.25);background:rgba(255,201,71,.08);color:#ffc947;cursor:pointer;transition:all .12s;">${s}</div>`).join('');
+}
+
+function renderMktTools() {
+  const el=document.getElementById('mkt-tools'); if(!el)return;
+  el.innerHTML=MKT_TOOLS.map(t=>`<div onclick="fillAndSend('mkt','${t.cmd.replace(/'/g,"&#39;")}')" style="display:flex;align-items:center;gap:8px;padding:9px 11px;border-radius:9px;border:1px solid var(--border);background:var(--bg2);margin-bottom:6px;cursor:pointer;transition:all .14s;" onmouseover="this.style.borderColor='var(--border2)'" onmouseout="this.style.borderColor='var(--border)'"><div style="font-size:18px;width:28px;text-align:center;">${t.icon}</div><div style="flex:1;"><div style="font-size:12.5px;font-weight:500;">${t.label}</div><div style="font-size:10px;color:var(--text3);">Clica para gerar</div></div></div>`).join('');
+}
+
+function renderMktCal() {
+  const el=document.getElementById('mkt-cal'); if(!el)return;
+  el.innerHTML=MKT_CAL.map(c=>`<div style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;border:1px solid var(--border);background:var(--bg2);margin-bottom:4px;"><div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3);width:28px;">${c.day}</div><div style="font-size:9.5px;font-weight:600;padding:2px 7px;border-radius:5px;background:${c.color}20;color:${c.color};flex-shrink:0;">${c.type}</div><div style="flex:1;font-size:11px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${c.tema}</div><div style="font-size:9.5px;color:var(--text3);font-family:'JetBrains Mono',monospace;">${c.hora}</div></div>`).join('');
+}
+
+function renderMktHooks() {
+  const el=document.getElementById('mkt-hooks'); if(!el)return;
+  el.innerHTML=MKT_HOOKS.map(h=>`<div onclick="navigator.clipboard.writeText(${JSON.stringify(h)}).then(()=>{})" style="padding:9px 11px;border-radius:8px;border:1px solid var(--border);background:var(--bg2);margin-bottom:4px;cursor:pointer;font-size:12px;color:var(--text2);line-height:1.5;transition:all .14s;" onmouseover="this.style.borderColor='var(--border2)';this.style.color='var(--text)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text2)'">${h} <span style="font-size:10px;color:var(--text3);">copiar</span></div>`).join('');
+}
+
+function renderMktMsgs() {
+  const el=document.getElementById('mkt-msgs'); if(!el)return;
+  el.innerHTML=mktConvos.map(m=>agentBubble('MK','linear-gradient(135deg,#ffc947,#ff9d00)','#1a0800',m.content,m.time,m.role==='user')).join('');
+  el.scrollTop=el.scrollHeight;
+}
+
+async function mktSend() {
+  if(mktLoading)return;
+  const inp=document.getElementById('mkt-inp');const text=(inp?.value||'').trim();if(!text)return;
+  inp.value='';inp.style.height='40px';
+  mktConvos.push({role:'user',content:text,time:now()});
+  mktLoading=true;document.getElementById('mkt-snd').disabled=true;
+  renderMktMsgs();
+  const el=document.getElementById('mkt-msgs');
+  if(el){el.innerHTML+=`<div style="display:flex;gap:8px;"><div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#ffc947,#ff9d00);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#1a0800;flex-shrink:0;margin-top:2px;">MK</div><div style="padding:10px 14px;border-radius:3px 13px 13px 13px;background:var(--bg2);border:1px solid var(--border);display:inline-flex;gap:3px;align-items:center;"><span class="td"></span><span class="td" style="animation-delay:.2s"></span><span class="td" style="animation-delay:.4s"></span></div></div>`;el.scrollTop=el.scrollHeight;}
+  try{const msgs=mktConvos.map(m=>({role:m.role,content:m.content}));const reply=await callAPI(MKT_SYSTEM,msgs,1200);mktConvos.push({role:'assistant',content:reply,time:now()});}
+  catch(e){mktConvos.push({role:'assistant',content:'Erro de ligacao. Tenta novamente.',time:now()});}
+  mktLoading=false;document.getElementById('mkt-snd').disabled=false;
+  renderMktMsgs();
+  renderMktSugs(['Regenera com tom mais urgente','Cria variacao para Reels','Adiciona mais hashtags','Cria versao mais curta']);
+}
+
+function renderSalesWelcome() {
+  const el=document.getElementById('sales-msgs'); if(!el)return;
+  el.innerHTML=agentBubble('VD','linear-gradient(135deg,var(--green),var(--teal))','#001a10',
+    'Ola! Sou o teu Agente de Vendas IA especializado em robots de trading.\n\nPosso ajudar com:\n- Qualificar leads automaticamente\n- Simular conversas de vendas reais\n- Contornar objecoes com confianca\n- Fechar demos e reunioes\n- Scripts de follow-up\n- Upsell e pos-venda\n\nUsa os scripts a direita ou descreve a situacao de uma lead. Vou guiar-te ao fechamento!',
+    'Agente Vendas IA · agora', false);
+}
+
+function renderSalesPipeline() {
+  const el=document.getElementById('sales-pipeline'); if(!el)return;
+  const sc={hot:'rgba(255,79,109,.15)',warm:'var(--amber-s)',cold:'var(--bg3)'};
+  const tc={hot:'var(--red)',warm:'var(--amber)',cold:'var(--text3)'};
+  el.innerHTML=SALES_PIPELINE.map(p=>`<div onclick="fillAndSend('sales','Atende a lead ${p.n} capital ${p.v} euros fase ${p.stage}. Qual a melhor abordagem agora?')" style="display:flex;align-items:center;gap:8px;padding:9px 11px;border-radius:9px;border:1px solid var(--border);background:var(--bg2);margin-bottom:5px;cursor:pointer;transition:all .14s;" onmouseover="this.style.borderColor='var(--border2)'" onmouseout="this.style.borderColor='var(--border)'"><div style="width:28px;height:28px;border-radius:50%;background:${sc[p.score]};display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:${tc[p.score]};flex-shrink:0;">${p.n.split(' ').map(x=>x[0]).join('')}</div><div style="flex:1;min-width:0;"><div style="font-size:12px;font-weight:500;">${p.n}</div><div style="font-size:10px;color:var(--text3);">${p.stage}</div></div><div style="font-size:11px;font-weight:600;color:var(--green);">€${p.v}</div></div>`).join('');
+}
+
+function renderSalesObjections() {
+  const el=document.getElementById('sales-objections'); if(!el)return;
+  el.innerHTML=SALES_OBJECTIONS.map(o=>`<div onclick="fillAndSend('sales','Uma lead disse ${o.obj}. Como respondo de forma consultiva para continuar a venda do robot de trading?')" style="padding:9px 11px;border-radius:9px;border:1px solid var(--border);background:var(--bg2);margin-bottom:5px;cursor:pointer;transition:all .14s;" onmouseover="this.style.borderColor='var(--border2)'" onmouseout="this.style.borderColor='var(--border)'"><div style="font-size:12px;font-weight:500;color:var(--red);margin-bottom:3px;">${o.obj}</div><div style="font-size:10.5px;color:var(--text3);">${o.resp}</div></div>`).join('');
+}
+
+function renderSalesScripts() {
+  const el=document.getElementById('sales-scripts'); if(!el)return;
+  el.innerHTML=SALES_SCRIPTS.map(s=>`<div onclick="fillAndSend('sales','${s.cmd.replace(/'/g,"&#39;")}')" style="display:flex;align-items:center;gap:8px;padding:9px 11px;border-radius:9px;border:1px solid rgba(0,224,160,.15);background:rgba(0,224,160,.05);margin-bottom:5px;cursor:pointer;transition:all .14s;" onmouseover="this.style.background='rgba(0,224,160,.1)'" onmouseout="this.style.background='rgba(0,224,160,.05)'"><div style="flex:1;font-size:12px;font-weight:500;color:var(--green);">${s.label}</div></div>`).join('');
+}
+
+function renderSalesMsgs() {
+  const el=document.getElementById('sales-msgs'); if(!el)return;
+  el.innerHTML=salesConvos.map(m=>agentBubble('VD','linear-gradient(135deg,var(--green),var(--teal))','#001a10',m.content,m.time,m.role==='user')).join('');
+  el.scrollTop=el.scrollHeight;
+}
+
+async function salesSend() {
+  if(salesLoading)return;
+  const inp=document.getElementById('sales-inp');const text=(inp?.value||'').trim();if(!text)return;
+  inp.value='';inp.style.height='40px';
+  salesConvos.push({role:'user',content:text,time:now()});
+  salesLoading=true;document.getElementById('sales-snd').disabled=true;
+  renderSalesMsgs();
+  const el=document.getElementById('sales-msgs');
+  if(el){el.innerHTML+=`<div style="display:flex;gap:8px;"><div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--green),var(--teal));display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#001a10;flex-shrink:0;margin-top:2px;">VD</div><div style="padding:10px 14px;border-radius:3px 13px 13px 13px;background:var(--bg2);border:1px solid var(--border);display:inline-flex;gap:3px;align-items:center;"><span class="td"></span><span class="td" style="animation-delay:.2s"></span><span class="td" style="animation-delay:.4s"></span></div></div>`;el.scrollTop=el.scrollHeight;}
+  try{const msgs=salesConvos.map(m=>({role:m.role,content:m.content}));const reply=await callAPI(SALES_SYSTEM,msgs,1000);salesConvos.push({role:'assistant',content:reply,time:now()});}
+  catch(e){salesConvos.push({role:'assistant',content:'Erro de ligacao. Tenta novamente.',time:now()});}
+  salesLoading=false;document.getElementById('sales-snd').disabled=false;
+  renderSalesMsgs();
+}
+
+
+
+
+// META ADS IA AGENT
+const ADS_SYSTEM = `Voce e um especialista em Meta Ads (Facebook e Instagram Ads) com IA, focado em robots de trading de Crypto e Forex em Portugal e Brasil.
+
+MISSAO: Maximizar ROI, reduzir CPA e escalar campanhas automaticamente.
+
+NICHO: Forex, Crypto, Marketing Digital, Renda extra
+PUBLICO: Portugal e Brasil, 18-45 anos
+PRODUTOS: Robot Crypto (297/mes), Robot Forex (197/mes), Pack Completo (397/mes), Sinais VIP (97/mes)
+
+FUNCOES QUE DOMINAS:
+
+1. GESTAO DE CAMPANHAS:
+- Criar campanhas de conversao, leads e mensagens
+- Configurar ABO (Ad Set Budget) e CBO (Campaign Budget)
+- Ajustar orcamento diario conforme performance
+- Escalar campanhas vencedoras (regra: ROAS > 3x, escalar 20%/dia)
+- Pausar campanhas com CPA elevado (regra: CPA > 2x objetivo, pausar)
+- Duplicar anuncios vencedores para novos publicos
+
+2. SEGMENTACAO INTELIGENTE:
+- Interesses: Forex trading, Cryptocurrency, Marketing digital, Ganhar dinheiro online, Home office, Empreendedorismo, Bitcoin, Investimentos
+- Lookalike audiences: 1%, 2-3%, 5-10%
+- Retargeting: visitantes 30/60/180 dias, visualizacoes de video, interacoes Instagram
+- Exclusoes: clientes ativos, leads ja convertidos
+
+3. CRIATIVOS AUTOMATICOS:
+- Hooks virais para anuncios (primeiros 3 segundos)
+- Headlines agressivas para conversao
+- CTA forte e direto
+- Copys para: video ads, imagem estatica, carrossel, reels ads
+- Teste A/B continuo de criativos
+
+4. METRICAS E OTIMIZACAO:
+- CTR ideal: > 2% (pausar se < 1%)
+- CPC maximo: 0.80 euros
+- CPA objetivo leads: < 5 euros
+- ROAS minimo: 3x
+- Frequencia maxima: 3.5 (renovar criativo se ultrapassar)
+- Escalar se ROAS > 4x por 3 dias consecutivos
+
+5. FUNIL AUTOMATICO:
+- Lead captado -> WhatsApp imediato (< 5 minutos)
+- Sequencia email: boas-vindas + ebook + oferta + upsell
+- Remarketing: nao convertidos em 48h
+- Upsell: clientes ativos apos 30 dias
+
+6. ESTRATEGIA DE ESCALA:
+- Fase 1 (teste): 5-10 euros/dia por ad set, 5-7 dias
+- Fase 2 (otimizacao): 20-30 euros/dia, publicos vencedores
+- Fase 3 (escala): +20%/dia ate 100-500 euros/dia
+- Sempre manter CBO com budget total + ABO para testes
+
+REGRAS DE SEGURANCA:
+- Budget maximo diario: definido pelo utilizador
+- Alertas quando CPA > 150% objetivo
+- Pausar automaticamente se ROAS < 1.5x por 2 dias
+- Limite de gasto semanal configuravel
+
+Respondes sempre em portugues europeu. Nunca dizes que es IA. Das sempre recomendacoes concretas com numeros especificos.`;
+
+let adsConvos = [], adsLoading = false;
+
+const ADS_KPIS = [
+  {l:'Gasto hoje', v:'€47.30', c:'var(--text)'},
+  {l:'Leads', v:'23', c:'var(--green)'},
+  {l:'CPA', v:'€2.06', c:'var(--green)'},
+  {l:'ROAS', v:'4.2x', c:'var(--gold)'},
+  {l:'CTR', v:'3.8%', c:'var(--acc)'},
+  {l:'Lucro est.', v:'€151', c:'var(--green)'},
+];
+
+const ADS_CAMPAIGNS = [
+  {n:'Robot Crypto - Leads PT', budget:'20/dia', spent:'€18.40', leads:11, cpa:'€1.67', roas:'5.1x', status:'active', trend:'up'},
+  {n:'Robot Forex - Conversao BR', budget:'15/dia', spent:'€14.80', leads:8, cpa:'€1.85', roas:'3.8x', status:'active', trend:'up'},
+  {n:'Pack Completo - Retargeting', budget:'10/dia', spent:'€9.10', leads:4, cpa:'€2.28', roas:'3.2x', status:'active', trend:'stable'},
+  {n:'Sinais VIP - Frio PT', budget:'5/dia', spent:'€5.00', leads:0, cpa:'-', roas:'0.8x', status:'paused', trend:'down'},
+];
+
+const ADS_TOOLS = [
+  {icon:'🚀', label:'Criar campanha de leads', cmd:'Cria uma campanha completa de geracao de leads para o robot crypto no Instagram. Orcamento 20 euros/dia, publico Portugal 25-45 anos interessados em crypto e investimentos. Inclui estrutura ABO, segmentacao, criativo e copy.'},
+  {icon:'✍️', label:'Gerar 5 copies para anuncio', cmd:'Gera 5 copies diferentes para anuncio de Instagram sobre o robot de trading crypto. Cada copy deve ter hook, desenvolvimento e CTA forte. Formatos: video, imagem e carrossel.'},
+  {icon:'🎯', label:'Otimizar campanhas ativas', cmd:'Analisa as campanhas ativas e recomenda otimizacoes concretas. Robot Crypto: ROAS 5.1x, CPA 1.67. Robot Forex: ROAS 3.8x, CPA 1.85. Pack Completo: ROAS 3.2x, CPA 2.28. O que devo fazer agora?'},
+  {icon:'📈', label:'Estrategia de escala', cmd:'Quero escalar as minhas campanhas de Meta Ads para robots de trading de 50 euros/dia para 200 euros/dia. Como faco de forma segura sem destruir o ROAS? Dao-me um plano passo a passo.'},
+  {icon:'🔁', label:'Configurar retargeting', cmd:'Cria uma estrategia completa de retargeting no Meta Ads para pessoas que viram o anuncio do robot mas nao se tornaram leads. Que publicos criar, que mensagens usar e que budget alocar?'},
+  {icon:'🪝', label:'10 hooks virais para ads', cmd:'Gera 10 hooks virais para os primeiros 3 segundos de anuncios de video no Instagram sobre robots de trading crypto e forex. Devem parar o scroll e gerar curiosidade imediata.'},
+  {icon:'📊', label:'Relatorio semanal', cmd:'Gera um relatorio semanal completo das campanhas Meta Ads de robots de trading. Gasto total 198 euros, 89 leads, CPA medio 2.22, ROAS medio 3.9x. O que foi bem, o que melhorar e plano para a proxima semana.'},
+  {icon:'🧪', label:'Plano de teste A/B', cmd:'Cria um plano completo de teste A/B para os anuncios de robot de trading. O que testar primeiro (copy, imagem, publico, CTA)? Como estruturar os testes para ter dados estatisticamente validos?'},
+];
+
+const ADS_CREATIVES = [
+  {n:'Video robot em acao', ctr:'4.2%', spend:'€12', status:'winner'},
+  {n:'Depoimento cliente', ctr:'3.8%', spend:'€8', status:'winner'},
+  {n:'Carrossel resultados', ctr:'2.9%', spend:'€6', status:'testing'},
+  {n:'Imagem com numeros', ctr:'1.1%', spend:'€4', status:'pause'},
+];
+
+const ADS_ALERTS = [
+  {type:'warn', msg:'Sinais VIP: ROAS 0.8x - pausar campanha'},
+  {type:'good', msg:'Robot Crypto: ROAS 5.1x - escalar +20%'},
+  {type:'good', msg:'23 leads hoje - abaixo do objetivo de 30'},
+  {type:'info', msg:'Frequencia 3.2 - renovar criativo em breve'},
+];
+
+const ADS_AUDIENCES = [
+  {n:'Crypto PT - Quente', size:'180K', status:'active'},
+  {n:'Forex BR - Lookalike 1%', size:'2.1M', status:'active'},
+  {n:'Retargeting 30 dias', size:'4.2K', status:'active'},
+  {n:'Interesses investimentos', size:'890K', status:'testing'},
+];
+
+function initAdsAgent() {
+  renderAdsKPIs();
+  renderAdsCampaigns();
+  renderAdsTools();
+  renderAdsCreatives();
+  renderAdsAlerts();
+  renderAdsAudiences();
+  if (adsConvos.length === 0) renderAdsWelcome(); else renderAdsMsgs();
+  renderAdsSugs([
+    'Criar campanha de leads robot crypto 20/dia',
+    'Otimizar campanhas ativas agora',
+    'Estrategia de escala de 50 para 200/dia',
+    'Gera 5 copies para anuncio Instagram',
+    'Configurar retargeting completo',
+    '10 hooks virais para video ads'
+  ]);
+}
+
+function renderAdsKPIs() {
+  const el = document.getElementById('ads-kpis'); if (!el) return;
+  el.innerHTML = ADS_KPIS.map(k => `<div style="padding:5px 12px;border-radius:9px;border:1px solid var(--border);background:var(--bg2);text-align:center;"><div style="font-size:9px;color:var(--text3);letter-spacing:.08em;text-transform:uppercase;">${k.l}</div><div style="font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:500;color:${k.c};margin-top:2px;">${k.v}</div></div>`).join('');
+}
+
+function renderAdsCampaigns() {
+  const el = document.getElementById('ads-campaigns'); if (!el) return;
+  const sc = {active:'var(--green)', paused:'var(--amber)', stopped:'var(--red)'};
+  const tc = {up:'▲', stable:'→', down:'▼'};
+  const tcc = {up:'var(--green)', stable:'var(--text3)', down:'var(--red)'};
+  el.innerHTML = ADS_CAMPAIGNS.map(c => `
+    <div onclick="fillAndSend('ads','Analisa a campanha ${c.n}: gasto ${c.spent}, ${c.leads} leads, CPA ${c.cpa}, ROAS ${c.roas}. O que devo fazer para otimizar?')" style="display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:9px;border:1px solid var(--border);background:var(--bg2);margin-bottom:5px;cursor:pointer;transition:all .14s;" onmouseover="this.style.borderColor='var(--border2)'" onmouseout="this.style.borderColor='var(--border)'">
+      <div style="width:7px;height:7px;border-radius:50%;background:${sc[c.status]};flex-shrink:0;"></div>
+      <div style="flex:1;min-width:0;"><div style="font-size:12px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${c.n}</div><div style="font-size:10px;color:var(--text3);">Budget: €${c.budget} · Gasto: ${c.spent}</div></div>
+      <div style="text-align:right;flex-shrink:0;">
+        <div style="font-size:11px;font-weight:600;color:var(--gold);">ROAS ${c.roas}</div>
+        <div style="font-size:10px;color:var(--text3);">CPA ${c.cpa} · ${c.leads} leads</div>
+      </div>
+      <div style="font-size:12px;color:${tcc[c.trend]};flex-shrink:0;">${tc[c.trend]}</div>
+    </div>`).join('');
+}
+
+function renderAdsTools() {
+  const el = document.getElementById('ads-tools'); if (!el) return;
+  el.innerHTML = ADS_TOOLS.map(t => `
+    <div onclick="fillAndSend('ads','${t.cmd.replace(/'/g,"&#39;")}')" style="display:flex;align-items:center;gap:8px;padding:9px 11px;border-radius:9px;border:1px solid var(--border);background:var(--bg2);margin-bottom:5px;cursor:pointer;transition:all .14s;" onmouseover="this.style.borderColor='var(--border2)'" onmouseout="this.style.borderColor='var(--border)'">
+      <div style="font-size:16px;width:26px;text-align:center;flex-shrink:0;">${t.icon}</div>
+      <div style="flex:1;"><div style="font-size:12px;font-weight:500;">${t.label}</div><div style="font-size:10px;color:var(--text3);">Clica para gerar</div></div>
+    </div>`).join('');
+}
+
+function renderAdsCreatives() {
+  const el = document.getElementById('ads-creatives'); if (!el) return;
+  const sc = {winner:'var(--green)', testing:'var(--gold)', pause:'var(--red)'};
+  const sl = {winner:'Winner', testing:'Em teste', pause:'Pausar'};
+  el.innerHTML = ADS_CREATIVES.map(c => `
+    <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:9px;border:1px solid var(--border);background:var(--bg2);margin-bottom:4px;">
+      <div style="flex:1;min-width:0;"><div style="font-size:11.5px;font-weight:500;">${c.n}</div><div style="font-size:10px;color:var(--text3);">CTR: ${c.ctr} · Gasto: ${c.spend}</div></div>
+      <div style="font-size:9px;font-weight:600;padding:2px 7px;border-radius:5px;background:${sc[c.status]}20;color:${sc[c.status]};flex-shrink:0;">${sl[c.status]}</div>
+    </div>`).join('');
+}
+
+function renderAdsAlerts() {
+  const el = document.getElementById('ads-alerts'); if (!el) return;
+  const ic = {warn:'⚠️', good:'✅', info:'ℹ️'};
+  const bc = {warn:'rgba(255,79,109,.1)', good:'rgba(0,224,160,.08)', info:'rgba(108,99,255,.08)'};
+  const tc2 = {warn:'var(--red)', good:'var(--green)', info:'var(--acc)'};
+  el.innerHTML = ADS_ALERTS.map(a => `
+    <div style="display:flex;align-items:flex-start;gap:7px;padding:8px 10px;border-radius:8px;background:${bc[a.type]};margin-bottom:4px;">
+      <span style="font-size:13px;flex-shrink:0;">${ic[a.type]}</span>
+      <div style="font-size:11.5px;color:${tc2[a.type]};line-height:1.5;">${a.msg}</div>
+    </div>`).join('');
+}
+
+function renderAdsAudiences() {
+  const el = document.getElementById('ads-audiences'); if (!el) return;
+  const sc = {active:'var(--green)', testing:'var(--gold)'};
+  el.innerHTML = ADS_AUDIENCES.map(a => `
+    <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:9px;border:1px solid var(--border);background:var(--bg2);margin-bottom:4px;">
+      <div style="width:7px;height:7px;border-radius:50%;background:${sc[a.status]};flex-shrink:0;"></div>
+      <div style="flex:1;"><div style="font-size:11.5px;font-weight:500;">${a.n}</div><div style="font-size:10px;color:var(--text3);">${a.size}</div></div>
+    </div>`).join('');
+}
+
+function renderAdsWelcome() {
+  const el = document.getElementById('ads-msgs'); if (!el) return;
+  el.innerHTML = agentBubble('AD','linear-gradient(135deg,#1877f2,#e040fb)','#fff',
+    'Ola! Sou o teu Agente de Meta Ads IA especializado em campanhas de robots de trading no Instagram e Facebook.\n\nO que posso fazer:\n- Criar e gerir campanhas de leads e conversao\n- Gerar copies e hooks virais para anuncios\n- Otimizar automaticamente (ROAS, CPA, CTR)\n- Escalar campanhas vencedoras com seguranca\n- Configurar retargeting e lookalike audiences\n- Funil completo: lead -> WhatsApp -> venda\n\nTens 4 campanhas ativas. O robot crypto esta a bombar com ROAS 5.1x! Vamos escalar? Usa os botoes a direita ou escreve o que precisas.',
+    'Agente Meta Ads IA · agora', false);
+}
+
+function renderAdsSugs(sugs) {
+  const el = document.getElementById('ads-sugs'); if (!el) return;
+  el.innerHTML = sugs.map(s => `<div onclick="fillAndSend('ads','${s.replace(/'/g,"&#39;")}')" style="font-size:11.5px;padding:4px 10px;border-radius:8px;border:1px solid rgba(24,119,242,.25);background:rgba(24,119,242,.08);color:#60a5fa;cursor:pointer;transition:all .12s;">${s}</div>`).join('');
+}
+
+function renderAdsMsgs() {
+  const el = document.getElementById('ads-msgs'); if (!el) return;
+  el.innerHTML = adsConvos.map(m => agentBubble('AD','linear-gradient(135deg,#1877f2,#e040fb)','#fff',m.content,m.time,m.role==='user')).join('');
+  el.scrollTop = el.scrollHeight;
+}
+
+async function adsSend() {
+  if (adsLoading) return;
+  const inp = document.getElementById('ads-inp');
+  const text = (inp?.value || '').trim(); if (!text) return;
+  inp.value = ''; inp.style.height = '40px';
+  adsConvos.push({ role: 'user', content: text, time: now() });
+  adsLoading = true; document.getElementById('ads-snd').disabled = true;
+  renderAdsMsgs();
+  const el = document.getElementById('ads-msgs');
+  if (el) { el.innerHTML += `<div style="display:flex;gap:8px;"><div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#1877f2,#e040fb);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff;flex-shrink:0;margin-top:2px;">AD</div><div style="padding:10px 14px;border-radius:3px 13px 13px 13px;background:var(--bg2);border:1px solid var(--border);display:inline-flex;gap:3px;align-items:center;"><span class="td"></span><span class="td" style="animation-delay:.2s"></span><span class="td" style="animation-delay:.4s"></span></div></div>`; el.scrollTop = el.scrollHeight; }
+  try {
+    const msgs = adsConvos.map(m => ({ role: m.role, content: m.content }));
+    const reply = await callAPI(ADS_SYSTEM, msgs, 1200);
+    adsConvos.push({ role: 'assistant', content: reply, time: now() });
+  } catch (e) {
+    const errMsg = e.message==='CORS_ERROR' ? '⚠️ Abre o ficheiro num servidor local.' : e.message==='key' ? '' : 'Erro: '+e.message;
+    if(errMsg) adsConvos.push({ role: 'assistant', content: errMsg, time: now() });
+    handleApiError(e, null);
+  }
+  adsLoading = false; document.getElementById('ads-snd').disabled = false;
+  renderAdsMsgs();
+  renderAdsSugs(['Escala a campanha robot crypto +20%', 'Gera novo criativo para substituir', 'Cria lookalike do publico vencedor', 'Quanto gastar amanha?']);
+}
+
+async function adsGenReport() {
+  fillAndSend('ads', 'Gera um relatorio completo do dia de hoje: gasto 47.30 euros, 23 leads, CPA medio 2.06, ROAS medio 4.2x, CTR 3.8%. Qual o resumo executivo, o que correu bem, o que melhorar e o plano para amanha?');
+}
+
+
+
+window.addEventListener('load',()=>{
+  const s=localStorage.getItem('gemini_key');
+  if(s)window.GEMINI_KEY=s;
+  // Warn if opened as file://
+  if(window.location.protocol === 'file:') {
+    setTimeout(showCorsHelper, 1500);
+  }
+});
+
+function handleApiError(err, agentEl) {
+  let msg = '';
+  if(err.message === 'CORS_ERROR') {
+    msg = '⚠️ Para usar os agentes, abre o ficheiro num servidor local.\n\nSolucao rapida:\n1. Instala a extensao "Live Server" no VS Code\n2. Clica com o botao direito no ficheiro → Open with Live Server\n\nOU usa o Python:\npython -m http.server 8080\nDepois abre: http://localhost:8080';
+    showCorsHelper();
+  } else if(err.message === 'API_KEY_INVALID') {
+    msg = '❌ API Key invalida. Verifica a tua key do Gemini.';
+    showApiKeyModal();
+  } else if(err.message === 'key') {
+    return; // modal already shown
+  } else {
+    msg = 'Erro de ligacao: ' + err.message + '\n\nVerifica:\n1. A tua API key do Gemini esta correcta\n2. Tens ligacao a internet\n3. O ficheiro esta a correr num servidor (nao file://)';
+  }
+  if(agentEl) agentEl.textContent = msg.split('\n')[0];
+}
+
+function showCorsHelper() {
+  if(document.getElementById('cors-modal')) return;
+  document.body.insertAdjacentHTML('beforeend', `
+    <div id="cors-modal" style="position:fixed;inset:0;background:rgba(0,0,0,.88);display:flex;align-items:center;justify-content:center;z-index:9999;">
+      <div style="background:#0b0b16;border:1px solid rgba(255,100,100,.3);border-radius:18px;padding:30px 34px;width:480px;max-width:92vw;">
+        <div style="font-size:22px;margin-bottom:10px;">⚠️</div>
+        <div style="font-family:'Syne',sans-serif;font-size:17px;font-weight:800;margin-bottom:6px;color:#ff9a70;">Ficheiro aberto localmente</div>
+        <div style="font-size:13px;color:#7878a0;margin-bottom:18px;line-height:1.8;">
+          O browser bloqueia chamadas a APIs externas quando o ficheiro e aberto directamente (<b style="color:#e8e8f8;">file://</b>).<br><br>
+          <b style="color:#e8e8f8;">Solucao mais facil — Python (ja instalado no teu PC):</b><br>
+          <div style="background:#10101e;border-radius:9px;padding:12px 14px;margin:10px 0;font-family:'JetBrains Mono',monospace;font-size:12px;color:#4ade80;">
+            1. Abre a pasta do ficheiro no terminal<br>
+            2. Escreve: <span style="color:#ffd166;">python -m http.server 8080</span><br>
+            3. Abre no browser: <span style="color:#60a5fa;">http://localhost:8080</span>
+          </div>
+          <b style="color:#e8e8f8;">Solucao alternativa — VS Code:</b><br>
+          Instala a extensao <b style="color:#e8e8f8;">Live Server</b> → clica com botao direito no ficheiro → <b style="color:#e8e8f8;">Open with Live Server</b>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button onclick="document.getElementById('cors-modal').remove()" style="flex:1;padding:12px;border-radius:10px;border:none;background:linear-gradient(135deg,#6c63ff,#e040fb);color:#fff;font-family:'Syne',sans-serif;font-size:14px;font-weight:700;cursor:pointer;">Entendi</button>
+          <button onclick="navigator.clipboard.writeText('python -m http.server 8080').then(()=>alert('Copiado! Cola no terminal.'))" style="padding:12px 16px;border-radius:10px;border:1px solid rgba(255,255,255,.1);background:transparent;color:#7878a0;cursor:pointer;font-family:'DM Sans',sans-serif;">Copiar comando</button>
+        </div>
+      </div>
+    </div>`);
+}
+
+</script>
+</body>
+</html>
