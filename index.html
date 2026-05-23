@@ -1052,17 +1052,22 @@ async function callAPI(sys, msgs, max=800){
   if(!apiKey){ showApiKeyModal(); throw new Error('key'); }
 
   // Usa gemini-1.5-flash (mais estavel e disponivel)
-  const MODEL = 'gemini-1.5-flash';
-  const url = 'https://generativelanguage.googleapis.com/v1/models/' + MODEL + ':generateContent?key=' + apiKey;
+  const MODEL = 'gemini-1.5-flash-latest';
+  const url = 'https://generativelanguage.googleapis.com/v1beta/models/' + MODEL + ':generateContent?key=' + apiKey;
 
   const history = validMsgs.slice(0,-1).map(function(m){
     return { role: m.role==='assistant' ? 'model' : 'user', parts:[{text: String(m.content)}] };
   });
   const last = validMsgs[validMsgs.length-1];
 
+  // Inclui o system prompt na primeira mensagem (compativel com todas as versoes)
+  const allContents = history.concat([{ role:'user', parts:[{text: String(last.content)}] }]);
+  // Adiciona contexto do sistema na primeira mensagem
+  if(allContents.length > 0 && allContents[0].role === 'user') {
+    allContents[0].parts[0].text = 'CONTEXTO DO SISTEMA:\n' + String(sys) + '\n\nMENSAGEM DO UTILIZADOR:\n' + allContents[0].parts[0].text;
+  }
   const bodyObj = {
-    system_instruction: { parts: [{text: String(sys)}] },
-    contents: history.concat([{ role:'user', parts:[{text: String(last.content)}] }]),
+    contents: allContents,
     generationConfig: { maxOutputTokens: max, temperature: 0.85 }
   };
 
