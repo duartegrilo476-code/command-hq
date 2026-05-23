@@ -1051,47 +1051,39 @@ async function callAPI(sys, msgs, max=800){
   const apiKey = window.GEMINI_KEY || localStorage.getItem('gemini_key');
   if(!apiKey){ showApiKeyModal(); throw new Error('key'); }
 
-  // Usa gemini-1.5-flash (mais estavel e disponivel)
-  const MODEL = 'gemini-1.5-flash-latest';
-  const url = 'https://generativelanguage.googleapis.com/v1beta/models/' + MODEL + ':generateContent?key=' + apiKey;
+  // gemini-2.0-flash - confirmado disponivel na conta
+  const url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=' + apiKey;
 
   const history = validMsgs.slice(0,-1).map(function(m){
     return { role: m.role==='assistant' ? 'model' : 'user', parts:[{text: String(m.content)}] };
   });
   const last = validMsgs[validMsgs.length-1];
 
-  // Inclui o system prompt na primeira mensagem (compativel com todas as versoes)
-  const allContents = history.concat([{ role:'user', parts:[{text: String(last.content)}] }]);
-  // Adiciona contexto do sistema na primeira mensagem
-  if(allContents.length > 0 && allContents[0].role === 'user') {
-    allContents[0].parts[0].text = 'CONTEXTO DO SISTEMA:\n' + String(sys) + '\n\nMENSAGEM DO UTILIZADOR:\n' + allContents[0].parts[0].text;
-  }
-  const bodyObj = {
-    contents: allContents,
-    generationConfig: { maxOutputTokens: max, temperature: 0.85 }
-  };
+  // System prompt incluido na primeira mensagem
+  const userText = history.length === 0
+    ? 'INSTRUCOES:\n' + String(sys) + '\n\n---\n\n' + String(last.content)
+    : String(last.content);
 
-  let resp;
-  try {
-    resp = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(bodyObj)
-    });
-  } catch(netErr) {
-    throw new Error('Sem ligacao a internet. Verifica a tua rede.');
-  }
+  const contents = history.concat([{ role:'user', parts:[{text: userText}] }]);
 
-  let data;
-  try { data = await resp.json(); } catch(e) { throw new Error('Resposta invalida do servidor.'); }
+  const resp = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      contents: contents,
+      generationConfig: { maxOutputTokens: max, temperature: 0.85 }
+    })
+  });
 
-  if(!resp.ok || data.error){
-    const msg = (data.error && data.error.message) || ('Erro HTTP ' + resp.status);
-    console.error('Gemini error:', msg, data);
-    if(resp.status === 400) throw new Error('API Key invalida. Vai a aistudio.google.com e cria uma nova key.');
-    if(resp.status === 403) throw new Error('API Key sem permissoes. Cria nova key em aistudio.google.com');
-    if(resp.status === 429) throw new Error('Limite de pedidos atingido. Aguarda 1 minuto e tenta novamente.');
-    throw new Error(msg);
+  const data = await resp.json();
+
+  if(data.error){
+    const code = data.error.code;
+    const msg = data.error.message || '';
+    if(code === 400) throw new Error('API Key invalida. Vai a aistudio.google.com e cria nova key.');
+    if(code === 403) throw new Error('Sem permissoes. Cria nova key em aistudio.google.com');
+    if(code === 429) throw new Error('Limite atingido. Aguarda 1 minuto.');
+    throw new Error('Erro ' + code + ': ' + msg);
   }
 
   const text = data.candidates &&
@@ -1101,7 +1093,7 @@ async function callAPI(sys, msgs, max=800){
                data.candidates[0].content.parts[0] &&
                data.candidates[0].content.parts[0].text;
 
-  if(!text) throw new Error('Gemini nao devolveu resposta. Tenta novamente.');
+  if(!text) throw new Error('Resposta vazia. Tenta novamente.');
   return text;
 }
 
