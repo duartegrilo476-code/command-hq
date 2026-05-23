@@ -1045,77 +1045,59 @@ function leadKey(e,id){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendL
 function leadAR(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,100)+'px';el.style.overflowY=el.scrollHeight>100?'auto':'hidden';}
 
 async function callAPI(sys, msgs, max=800){
-  const validMsgs = msgs.filter(m => m.content && m.content.trim());
+  const validMsgs = msgs.filter(m => m && m.content && String(m.content).trim());
   if(!validMsgs.length) throw new Error('Sem mensagens');
 
-  // Detecta se /api/chat existe (so funciona em VPS, nao em static hosts como Vercel)
-  const useDirect = window.location.hostname.includes('vercel.app') ||
-                    window.location.hostname.includes('netlify.app') ||
-                    window.location.hostname.includes('github.io') ||
-                    window.location.protocol === 'file:';
-
-  if(!useDirect){
-    // Tenta servidor /api/chat (VPS)
-    try {
-      const r = await fetch('/api/chat', {
-        method:'POST', headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({system:sys, messages:validMsgs, max_tokens:max})
-      });
-      if(r.ok){
-        const d = await r.json();
-        return d.content?.[0]?.text || d.content?.find(b=>b.type==='text')?.text || 'Sem resposta.';
-      }
-    } catch(e){}
-  }
-
-  // Chamada DIRETA ao Gemini
   const apiKey = window.GEMINI_KEY || localStorage.getItem('gemini_key');
-  if(!apiKey){ showApiKeyModal(); throw new Error('Precisa de API Key. Clica em 🔑 Gemini API no topo.'); }
+  if(!apiKey){ showApiKeyModal(); throw new Error('key'); }
 
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
-  const history = validMsgs.slice(0,-1).map(m=>({role:m.role==='assistant'?'model':'user',parts:[{text:m.content}]}));
+  // Usa gemini-1.5-flash (mais estavel e disponivel)
+  const MODEL = 'gemini-1.5-flash';
+  const url = 'https://generativelanguage.googleapis.com/v1beta/models/' + MODEL + ':generateContent?key=' + apiKey;
+
+  const history = validMsgs.slice(0,-1).map(function(m){
+    return { role: m.role==='assistant' ? 'model' : 'user', parts:[{text: String(m.content)}] };
+  });
   const last = validMsgs[validMsgs.length-1];
 
-  let r2;
+  const bodyObj = {
+    system_instruction: { parts: [{text: String(sys)}] },
+    contents: history.concat([{ role:'user', parts:[{text: String(last.content)}] }]),
+    generationConfig: { maxOutputTokens: max, temperature: 0.85 }
+  };
+
+  let resp;
   try {
-    r2 = await fetch(url, {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({
-        system_instruction:{parts:[{text:sys}]},
-        contents:[...history,{role:'user',parts:[{text:last.content}]}],
-        generationConfig:{maxOutputTokens:max,temperature:0.85},
-        safetySettings:[
-          {category:"HARM_CATEGORY_HARASSMENT",threshold:"BLOCK_NONE"},
-          {category:"HARM_CATEGORY_HATE_SPEECH",threshold:"BLOCK_NONE"},
-          {category:"HARM_CATEGORY_SEXUALLY_EXPLICIT",threshold:"BLOCK_NONE"},
-          {category:"HARM_CATEGORY_DANGEROUS_CONTENT",threshold:"BLOCK_NONE"}
-        ]
-      })
+    resp = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(bodyObj)
     });
-  } catch(e){
-    throw new Error('Sem ligacao a internet ou Gemini API bloqueada.');
+  } catch(netErr) {
+    throw new Error('Sem ligacao a internet. Verifica a tua rede.');
   }
 
-  if(!r2.ok){
-    const errText = await r2.text();
-    console.error('Gemini erro HTTP', r2.status, errText);
-    if(r2.status === 400) throw new Error('API Key invalida ou pedido mal formado. Verifica a key em aistudio.google.com');
-    if(r2.status === 403) throw new Error('API Key sem permissoes. Cria nova key em aistudio.google.com');
-    if(r2.status === 429) throw new Error('Limite de pedidos excedido. Aguarda 1 minuto.');
-    throw new Error('Erro Gemini HTTP ' + r2.status);
+  let data;
+  try { data = await resp.json(); } catch(e) { throw new Error('Resposta invalida do servidor.'); }
+
+  if(!resp.ok || data.error){
+    const msg = (data.error && data.error.message) || ('Erro HTTP ' + resp.status);
+    console.error('Gemini error:', msg, data);
+    if(resp.status === 400) throw new Error('API Key invalida. Vai a aistudio.google.com e cria uma nova key.');
+    if(resp.status === 403) throw new Error('API Key sem permissoes. Cria nova key em aistudio.google.com');
+    if(resp.status === 429) throw new Error('Limite de pedidos atingido. Aguarda 1 minuto e tenta novamente.');
+    throw new Error(msg);
   }
 
-  const d2 = await r2.json();
-  if(d2.error){
-    console.error('Gemini error:', d2.error);
-    throw new Error(d2.error.message || 'Erro Gemini desconhecido');
-  }
-  if(!d2.candidates || !d2.candidates[0]){
-    console.error('Sem candidates:', d2);
-    throw new Error('Gemini nao devolveu resposta. Tenta novamente.');
-  }
-  return d2.candidates[0].content?.parts?.[0]?.text || 'Resposta vazia.';
+  const text = data.candidates &&
+               data.candidates[0] &&
+               data.candidates[0].content &&
+               data.candidates[0].content.parts &&
+               data.candidates[0].content.parts[0] &&
+               data.candidates[0].content.parts[0].text;
+
+  if(!text) throw new Error('Gemini nao devolveu resposta. Tenta novamente.');
+  return text;
 }
 
 function showApiKeyModal(){
@@ -1497,7 +1479,7 @@ async function mktSend() {
   const el=document.getElementById('mkt-msgs');
   if(el){el.innerHTML+=`<div style="display:flex;gap:8px;"><div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#ffc947,#ff9d00);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#1a0800;flex-shrink:0;margin-top:2px;">MK</div><div style="padding:10px 14px;border-radius:3px 13px 13px 13px;background:var(--bg2);border:1px solid var(--border);display:inline-flex;gap:3px;align-items:center;"><span class="td"></span><span class="td" style="animation-delay:.2s"></span><span class="td" style="animation-delay:.4s"></span></div></div>`;el.scrollTop=el.scrollHeight;}
   try{const msgs=mktConvos.map(m=>({role:m.role,content:m.content}));const reply=await callAPI(MKT_SYSTEM,msgs,1200);mktConvos.push({role:'assistant',content:reply,time:now()});}
-  catch(e){mktConvos.push({role:'assistant',content:'Erro de ligacao. Tenta novamente.',time:now()});}
+  catch(e){mktConvos.push({role:'assistant',content:e.message || 'Erro de ligacao. Tenta novamente.',time:now()});}
   mktLoading=false;document.getElementById('mkt-snd').disabled=false;
   renderMktMsgs();
   renderMktSugs(['Regenera com tom mais urgente','Cria variacao para Reels','Adiciona mais hashtags','Cria versao mais curta']);
@@ -1543,7 +1525,7 @@ async function salesSend() {
   const el=document.getElementById('sales-msgs');
   if(el){el.innerHTML+=`<div style="display:flex;gap:8px;"><div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--green),var(--teal));display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#001a10;flex-shrink:0;margin-top:2px;">VD</div><div style="padding:10px 14px;border-radius:3px 13px 13px 13px;background:var(--bg2);border:1px solid var(--border);display:inline-flex;gap:3px;align-items:center;"><span class="td"></span><span class="td" style="animation-delay:.2s"></span><span class="td" style="animation-delay:.4s"></span></div></div>`;el.scrollTop=el.scrollHeight;}
   try{const msgs=salesConvos.map(m=>({role:m.role,content:m.content}));const reply=await callAPI(SALES_SYSTEM,msgs,1000);salesConvos.push({role:'assistant',content:reply,time:now()});}
-  catch(e){salesConvos.push({role:'assistant',content:'Erro de ligacao. Tenta novamente.',time:now()});}
+  catch(e){salesConvos.push({role:'assistant',content:e.message || 'Erro de ligacao. Tenta novamente.',time:now()});}
   salesLoading=false;document.getElementById('sales-snd').disabled=false;
   renderSalesMsgs();
 }
